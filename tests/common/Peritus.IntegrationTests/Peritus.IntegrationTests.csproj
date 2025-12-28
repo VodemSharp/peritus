@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Peritus.IntegrationTests</RootNamespace>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.PostgreSQL"/>
+    <PackageReference Include="Aspire.Hosting.Testing"/>
+    <PackageReference Include="Aspire.Hosting.Valkey"/>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing"/>
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing"/>
+    <PackageReference Include="Refit"/>
+    <PackageReference Include="xunit.analyzers"/>
+    <PackageReference Include="xunit.v3.assert"/>
+    <PackageReference Include="xunit.v3.extensibility.core"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\api\Peritus.Api\Peritus.Api.csproj"/>
+    <ProjectReference Include="..\..\..\src\host\Peritus.AppHost\Peritus.AppHost.csproj"/>
+  </ItemGroup>
+
+</Project>

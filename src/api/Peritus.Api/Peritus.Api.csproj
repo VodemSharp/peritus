@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\common\Peritus.Logging\Peritus.Logging.csproj"/>
+    <ProjectReference Include="..\..\common\Peritus.OpenApi\Peritus.OpenApi.csproj"/>
+    <ProjectReference Include="..\..\contracts\Peritus.Identity.RestContracts\Peritus.Identity.RestContracts.csproj"/>
+    <ProjectReference Include="..\..\host\Peritus.ServiceDefaults\Peritus.ServiceDefaults.csproj"/>
+    <ProjectReference Include="..\..\modules\Peritus.Identity\Peritus.Identity.csproj"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.StackExchange.Redis.DistributedCaching"/>
+    <PackageReference Include="Dapper"/>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer"/>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Scalar.AspNetCore"/>
+    <PackageReference Include="Serilog.AspNetCore"/>
+  </ItemGroup>
+
+</Project>

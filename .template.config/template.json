@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "VodemSharp",
+  "classifications": [
+    "Web",
+    "Solution",
+    "Aspire"
+  ],
+  "identity": "Peritus.Solution.Template",
+  "name": "Peritus modular solution",
+  "shortName": "peritus",
+  "description": "Creates the Peritus modular Aspire solution that contains the API, AppHost, ServiceDefaults, and module projects.",
+  "sourceName": "Peritus",
+  "defaultName": "Peritus",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "primaryOutputs": [
+    {
+      "path": "Peritus.slnx"
+    }
+  ],
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "exclude": [
+            ".git/**",
+            ".idea/**",
+            ".DS_Store",
+            ".template.config/**",
+            "**/[Bb]in/**",
+            "**/[Oo]bj/**",
+            "**/*.user",
+            "**/*.userprefs",
+            "**/*.suo"
+          ]
+        }
+      ]
+    }
+  ],
+  "symbols": {
+    "appHostSecret": {
+      "type": "generated",
+      "generator": "guid",
+      "parameters": {
+        "format": "D"
+      },
+      "replaces": "44d33a27-fb9e-4197-b81b-9493411945a1"
+    }
+  },
+  "postActions": [
+    {
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages",
+      "manualInstructions": [
+        {
+          "text": "Run 'dotnet restore' to install the solution dependencies."
+        }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    }
+  ]
+}

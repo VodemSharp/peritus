@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions"/>
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Peritus.Types\Peritus.Types.csproj"/>
+  </ItemGroup>
+
+</Project>

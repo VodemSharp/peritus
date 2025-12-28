@@ -1,0 +1,40 @@
+<Solution>
+  <Folder Name="/config/">
+    <File Path=".editorconfig"/>
+    <File Path="Directory.Packages.props"/>
+  </Folder>
+  <Folder Name="/src/"/>
+  <Folder Name="/src/api/">
+    <Project Path="src/api/Peritus.Api/Peritus.Api.csproj"/>
+  </Folder>
+  <Folder Name="/src/common/">
+    <Project Path="src/common/Peritus.Logging/Peritus.Logging.csproj"/>
+    <Project Path="src/common/Peritus.OpenApi/Peritus.OpenApi.csproj"/>
+    <Project Path="src/common/Peritus.Persistence/Peritus.Persistence.csproj"/>
+    <Project Path="src/common/Peritus.Guard/Peritus.Guard.csproj"/>
+    <Project Path="src/common/Peritus.Primitives/Peritus.Primitives.csproj"/>
+    <Project Path="src/common/Peritus.Results/Peritus.Results.csproj"/>
+    <Project Path="src/common/Peritus.Types/Peritus.Types.csproj"/>
+  </Folder>
+  <Folder Name="/src/contracts/">
+    <Project Path="src/contracts/Peritus.Identity.RestContracts/Peritus.Identity.RestContracts.csproj"/>
+  </Folder>
+  <Folder Name="/src/host/">
+    <Project Path="src/host/Peritus.AppHost/Peritus.AppHost.csproj"/>
+    <Project Path="src/host/Peritus.ServiceDefaults/Peritus.ServiceDefaults.csproj"/>
+  </Folder>
+  <Folder Name="/src/modules/">
+    <Project Path="src/modules/Peritus.Identity.Migrator/Peritus.Identity.Migrator.csproj"/>
+    <Project Path="src/modules/Peritus.Identity/Peritus.Identity.csproj"/>
+  </Folder>
+  <Folder Name="/tests/"/>
+  <Folder Name="/tests/api/">
+    <Project Path="tests/api/Peritus.Api.IntegrationTests/Peritus.Api.IntegrationTests.csproj"/>
+  </Folder>
+  <Folder Name="/tests/common/">
+    <Project Path="tests/common/Peritus.IntegrationTests/Peritus.IntegrationTests.csproj"/>
+  </Folder>
+  <Folder Name="/tests/modules/">
+    <Project Path="tests\modules\Peritus.Identity.IntegrationTests\Peritus.Identity.IntegrationTests.csproj"/>
+  </Folder>
+</Solution>

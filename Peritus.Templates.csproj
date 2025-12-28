@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <PackageType>Template</PackageType>
+    <PackageId>Peritus.Templates</PackageId>
+    <PackageVersion>1.0.0</PackageVersion>
+    <Title>Peritus modular Aspire solution template</Title>
+    <Authors>Vadym Fedorovych</Authors>
+    <Description>dotnet new template that scaffolds the Peritus modular Aspire solution.</Description>
+    <PackageTags>dotnet-new;template;aspire;web</PackageTags>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NoWarn>NU5128</NoWarn>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="**/*"
+          Exclude="bin/**;obj/**;**/bin/**;**/obj/**;.git/**;.idea/**;.vs/**;**/.DS_Store;**/*.user;**/*.userprefs;**/*.suo;**/*.csproj.user;Peritus.Templates.csproj;Peritus.Templates.csproj.user;Peritus.Templates.csproj.*;nupkg/**"
+          Pack="true"
+          PackagePath="content/"/>
+  </ItemGroup>
+
+</Project>

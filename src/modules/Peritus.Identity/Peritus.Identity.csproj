@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\common\Peritus.Guard\Peritus.Guard.csproj"/>
+    <ProjectReference Include="..\..\common\Peritus.Persistence\Peritus.Persistence.csproj"/>
+    <ProjectReference Include="..\..\common\Peritus.Primitives\Peritus.Primitives.csproj"/>
+    <ProjectReference Include="..\..\common\Peritus.Results\Peritus.Results.csproj"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL"/>
+    <PackageReference Include="EFCore.NamingConventions"/>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL"/>
+  </ItemGroup>
+
+</Project>
