@@ -16,11 +16,11 @@ This project ships a custom `dotnet new` template that scaffolds the full Peritu
 ## How to pack and install locally
 1) Pack the template project:
    ```bash
-   dotnet pack Peritus.Templates.csproj -c Release
+   dotnet pack Peritus.Templates.csproj -c Release -o ./nupkg
    ```
 2) Install the produced nupkg:
    ```bash
-   dotnet new --install ./nupkg/Peritus.Templates.1.0.0.nupkg
+   dotnet new install ./nupkg/Peritus.Templates.1.0.0.nupkg
    ```
 3) Verify:
    ```bash
