@@ -26,6 +26,9 @@
     <Project Path="src/modules/Peritus.Migrator/Peritus.Migrator.csproj" />
     <Project Path="src/modules/Peritus.Identity/Peritus.Identity.csproj" />
   </Folder>
+  <Folder Name="/src/web/">
+    <Project Path="src/web/Peritus.Web/Peritus.Web.csproj" />
+  </Folder>
   <Folder Name="/tests/" />
   <Folder Name="/tests/api/">
     <Project Path="tests/api/Peritus.Api.IntegrationTests/Peritus.Api.IntegrationTests.csproj" />

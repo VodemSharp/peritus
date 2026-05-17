@@ -5,7 +5,7 @@ name: Stage
 
 on:
   push:
-    branches: [dev]
+    branches: [ dev ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -43,7 +43,7 @@ jobs:
 
       - name: Install Aspire CLI
         run: |
-          curl -sSL https://aspire.dev/install.sh | bash -s -- --version 13.0.0
+          curl -sSL https://aspire.dev/install.sh | bash -s -- --version ${{ vars.ASPIRE_VERSION }}
           echo "$HOME/.aspire/bin" >> $GITHUB_PATH
 
       - name: Restore and Build
@@ -64,12 +64,14 @@ jobs:
       - name: Build and push images
         run: aspire do push
 
-      - name: Tag and push dev-latest
-        env:
-          SOURCE_TAG: ${{ github.sha }}
-          TARGET_TAGS: dev-latest
-          SKIP_PULL: true
-        run: bash .github/scripts/tag-and-push-container-images.sh
+      - name: Ensure jq is installed
+        run: |
+          if command -v jq &> /dev/null; then
+            echo "jq already installed: $(jq --version)"
+            exit 0
+          fi
+          sudo apt-get update
+          sudo apt-get install -y jq
 
       - name: Cleanup old images
         env:
@@ -79,11 +81,8 @@ jobs:
         run: |
           bash .github/scripts/delete-old-container-images.sh api 20
           bash .github/scripts/delete-old-container-images.sh migrator 20
+          bash .github/scripts/delete-old-container-images.sh web 20
 
-      # NOTE: Migration runs before the redeploy webhook intentionally.
-      # The staging environment should have the schema ready before the new
-      # containers start. If the webhook fails, the migration has already been
-      # applied but the old code remains running. This is acceptable for staging.
       - name: Run database migrations
         env:
           CONNECTION_STRING: ${{ secrets.DEV_DATABASE_CONNECTION_STRING }}
@@ -111,11 +110,11 @@ jobs:
 
       - name: Trigger Dokploy dev redeploy
         run: |
-          if [ -z "${{ secrets.DOKPLOY_DEV_WEBHOOK_URL }}" ]; then
-            echo "Error: DOKPLOY_DEV_WEBHOOK_URL is not configured" >&2
+          if [ -z "${{ secrets.DEV_DOKPLOY_WEBHOOK_URL }}" ]; then
+            echo "Error: DEV_DOKPLOY_WEBHOOK_URL is not configured" >&2
             exit 1
           fi
-          curl -X POST "${{ secrets.DOKPLOY_DEV_WEBHOOK_URL }}" \
+          curl -X POST "${{ secrets.DEV_DOKPLOY_WEBHOOK_URL }}" \
                -H "Content-Type: application/json" \
                -d '{}' \
                --fail-with-body

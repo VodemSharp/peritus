@@ -7,8 +7,8 @@ SOURCE_TAG="${SOURCE_TAG:?SOURCE_TAG is not set}"
 TARGET_TAGS="${TARGET_TAGS:?TARGET_TAGS is not set}"
 SKIP_PULL="${SKIP_PULL:-false}"
 
-# Comma-separated list of image names. Defaults to api,migrator.
-IMAGES="${IMAGES:-api,migrator}"
+# Comma-separated list of image names. Defaults to api,migrator,web.
+IMAGES="${IMAGES:-api,migrator,web}"
 
 PREFIX="${REGISTRY}/${REPOSITORY}"
 IFS=',' read -ra IMAGE_LIST <<< "$IMAGES"

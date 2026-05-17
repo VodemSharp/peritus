@@ -44,7 +44,7 @@ jobs:
 
       - name: Install Aspire CLI
         run: |
-          curl -sSL https://aspire.dev/install.sh | bash -s -- --version 13.0.0
+          curl -sSL https://aspire.dev/install.sh | bash -s -- --version ${{ vars.ASPIRE_VERSION }}
           echo "$HOME/.aspire/bin" >> $GITHUB_PATH
 
       - name: Extract version
@@ -79,14 +79,6 @@ jobs:
           APP_VERSION: ${{ steps.version.outputs.version }}
         run: aspire do push
 
-      - name: Tag and push latest (fallback)
-        if: ${{ steps.promote_check.outputs.safe != 'true' }}
-        env:
-          SOURCE_TAG: ${{ steps.version.outputs.version }}
-          TARGET_TAGS: latest
-          SKIP_PULL: true
-        run: bash .github/scripts/tag-and-push-container-images.sh
-
       # NOTE: This step relies on the version-tagged image having been pushed
       # in the preceding promotion or fallback build step. If that step failed
       # partially, this migration will fail with a Docker "not found" error.
@@ -112,11 +104,11 @@ jobs:
 
       - name: Trigger Dokploy prod redeploy
         run: |
-          if [ -z "${{ secrets.DOKPLOY_PROD_WEBHOOK_URL }}" ]; then
-            echo "Error: DOKPLOY_PROD_WEBHOOK_URL is not configured" >&2
+          if [ -z "${{ secrets.PROD_DOKPLOY_WEBHOOK_URL }}" ]; then
+            echo "Error: PROD_DOKPLOY_WEBHOOK_URL is not configured" >&2
             exit 1
           fi
-          curl -X POST "${{ secrets.DOKPLOY_PROD_WEBHOOK_URL }}" \
+          curl -X POST "${{ secrets.PROD_DOKPLOY_WEBHOOK_URL }}" \
                -H "Content-Type: application/json" \
                -d '{}' \
                --fail-with-body

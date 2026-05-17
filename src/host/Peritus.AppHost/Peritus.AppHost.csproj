@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\api\Peritus.Api\Peritus.Api.csproj"/>
+    <ProjectReference Include="..\..\web\Peritus.Web\Peritus.Web.csproj"/>
     <ProjectReference Include="..\..\modules\Peritus.Migrator\Peritus.Migrator.csproj"/>
   </ItemGroup>
 

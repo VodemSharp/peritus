@@ -16,10 +16,6 @@ jobs:
     permissions:
       contents: read
 
-    env:
-      REGISTRY_ENDPOINT: ghcr.io
-      REGISTRY_REPOSITORY: ${{ github.repository }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -39,7 +35,7 @@ jobs:
 
       - name: Install Aspire CLI
         run: |
-          curl -sSL https://aspire.dev/install.sh | bash -s -- --version 13.0.0
+          curl -sSL https://aspire.dev/install.sh | bash -s -- --version ${{ vars.ASPIRE_VERSION }}
           echo "$HOME/.aspire/bin" >> $GITHUB_PATH
 
       - name: Restore and Build
