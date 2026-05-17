@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\common\Peritus.Logging\Peritus.Logging.csproj"/>
     <ProjectReference Include="..\..\common\Peritus.OpenApi\Peritus.OpenApi.csproj"/>
     <ProjectReference Include="..\..\contracts\Peritus.Identity.RestContracts\Peritus.Identity.RestContracts.csproj"/>
     <ProjectReference Include="..\..\host\Peritus.ServiceDefaults\Peritus.ServiceDefaults.csproj"/>

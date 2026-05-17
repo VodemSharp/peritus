@@ -10,11 +10,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\api\Peritus.Api\Peritus.Api.csproj"/>
-    <ProjectReference Include="..\..\modules\Peritus.Identity.Migrator\Peritus.Identity.Migrator.csproj"/>
+    <ProjectReference Include="..\..\modules\Peritus.Migrator\Peritus.Migrator.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost"/>
+    <PackageReference Include="Aspire.Hosting.Docker" />
     <PackageReference Include="Aspire.Hosting.PostgreSQL"/>
     <PackageReference Include="Aspire.Hosting.Valkey"/>
   </ItemGroup>

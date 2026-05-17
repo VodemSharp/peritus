@@ -1,6 +1,6 @@
 using Peritus.Types.Identity.Users;
 
-namespace Peritus.Identity.Migrator.Options;
+namespace Peritus.Migrator.Options;
 
 public class AdminOptions
 {

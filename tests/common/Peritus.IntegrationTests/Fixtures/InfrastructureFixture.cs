@@ -55,7 +55,7 @@ public class InfrastructureFixture : IAsyncLifetime
             .WaitAsync(_defaultTimeout, _ct);
 
         await App.ResourceNotifications
-            .WaitForResourceAsync("identity-migrator", KnownResourceStates.Finished, _ct)
+            .WaitForResourceAsync("migrator", KnownResourceStates.Finished, _ct)
             .WaitAsync(_defaultTimeout, _ct);
 
         DbConnectionString = (await App.GetConnectionStringAsync("db", _ct).AsTask())!;

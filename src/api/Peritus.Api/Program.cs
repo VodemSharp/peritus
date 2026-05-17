@@ -15,7 +15,6 @@ builder
     .ConfigureAuth()
     .ConfigureCache()
     .ConfigureDatabase()
-    .ConfigureLogging()
     .ConfigureOpenApi()
     .ConfigureOptions()
     .ConfigureTime();

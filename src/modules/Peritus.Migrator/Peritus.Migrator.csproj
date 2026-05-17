@@ -4,7 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>dotnet-Peritus.Identity.Migrator-254f2a22-6e59-45ff-8934-26261896e0b0</UserSecretsId>
+    <UserSecretsId>dotnet-Peritus.Migrator-254f2a22-6e59-45ff-8934-26261896e0b0</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

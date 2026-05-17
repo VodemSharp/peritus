@@ -2,21 +2,21 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Peritus.Identity.Migrator.Options;
+using Peritus.Migrator.Options;
 using Peritus.Identity.Persistence;
 using Peritus.Identity.Persistence.Entities.Roles;
 using Peritus.Identity.Persistence.Entities.Users;
 using Peritus.Types.Identity.Roles;
 using Peritus.Types.Localization;
 
-namespace Peritus.Identity.Migrator;
+namespace Peritus.Migrator;
 
 public class Worker(
     IServiceProvider serviceProvider,
     IHostApplicationLifetime hostApplicationLifetime
 ) : BackgroundService
 {
-    public const string ActivitySourceName = "IdentityMigrations";
+    public const string ActivitySourceName = "Migrations";
     private static readonly ActivitySource _activitySource = new(ActivitySourceName);
 
     protected override async Task ExecuteAsync(CancellationToken ct)

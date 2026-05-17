@@ -15,7 +15,7 @@ var postgres = builder.AddPostgres("postgres", dbUsername, dbPassword)
 
 var db = postgres.AddDatabase("db", "peritus");
 
-var identityMigrator = builder.AddProject<Peritus_Identity_Migrator>("identity-migrator")
+var migrator = builder.AddProject<Peritus_Migrator>("migrator")
     .WithReference(db)
     .WaitFor(db);
 
@@ -23,6 +23,6 @@ var api = builder.AddProject<Peritus_Api>("api")
     .WithHttpHealthCheck("/health")
     .WithReference(cache)
     .WithReference(db)
-    .WaitFor(identityMigrator);
+    .WaitFor(migrator);
 
 builder.Build().Run();

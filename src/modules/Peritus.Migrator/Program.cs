@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Peritus.Identity;
-using Peritus.Identity.Migrator;
-using Peritus.Identity.Migrator.Options;
+using Peritus.Migrator;
+using Peritus.Migrator.Options;
 using Peritus.Persistence.Extensions;
 using Peritus.ServiceDefaults;
 
