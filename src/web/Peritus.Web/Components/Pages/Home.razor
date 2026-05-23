@@ -1,7 +1,27 @@
-﻿@page "/"
+@page "/"
+@using Peritus.Guard.Claims
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="text-center py-5">
+    <h1 class="display-4">Welcome to Peritus</h1>
+    <p class="lead">A .NET 10 template with Aspire orchestration.</p>
+</div>
 
-Welcome to your new app.
+<AuthorizeView>
+    <Authorized>
+        <div class="alert alert-success">
+            You are signed in as <strong>@context.User.FindFirstValue(CustomClaimTypes.Email)</strong>.
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <p>
+                    <a href="/auth/signin" class="btn btn-primary btn-lg me-2">Sign In</a>
+                    <a href="/auth/signup" class="btn btn-outline-primary btn-lg">Sign Up</a>
+                </p>
+            </div>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>

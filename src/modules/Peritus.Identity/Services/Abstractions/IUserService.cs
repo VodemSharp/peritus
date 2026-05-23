@@ -7,8 +7,11 @@ namespace Peritus.Identity.Services.Abstractions;
 
 public interface IUserService
 {
-    Task<bool> AnyAsync(Email email);
-    Task<User?> GetOrDefaultAsync(Email email);
-    Task<UserId> CreateAsync(Email email, Password password, List<RoleName>? roleNames = null, Culture? culture = null);
-    Task UpdateAsync(User user);
+    Task<UserId> CreateAsync(Email email, Password password, List<RoleName>? roleNames = null, Culture? culture = null,
+        CancellationToken ct = default);
+
+    Task UpdateAsync(User user, CancellationToken ct = default);
+    Task<User> GetByIdAsync(UserId userId, CancellationToken ct = default);
+    Task<User?> FindByEmailAsync(Email email, CancellationToken ct = default);
+    Task<bool> AnyByEmailAsync(Email email, CancellationToken ct = default);
 }

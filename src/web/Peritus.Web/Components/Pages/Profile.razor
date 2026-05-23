@@ -1,0 +1,38 @@
+@page "/profile"
+@attribute [Authorize]
+@using Peritus.Identity.RestContracts
+@using Peritus.Identity.RestContracts.Profile
+@inject IIdentityApi Api
+
+<PageTitle>Profile</PageTitle>
+
+<h1>Profile</h1>
+
+@if (_user is null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">@_user.Email</h5>
+            <p class="card-text">
+                <strong>Email:</strong> @_user.Email
+            </p>
+        </div>
+    </div>
+}
+
+@code {
+    private GetCurrentUserResponse? _user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Api.GetCurrentUserAsync();
+        if (response.IsSuccessful)
+        {
+            _user = response.Content;
+        }
+    }
+}

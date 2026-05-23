@@ -16,7 +16,6 @@ public class UserSession : TimestampedEntity
     public UserAgent UserAgent { get; set; }
 
     public UserSessionStatus Status { get; set; }
-    public UserSessionProvider Provider { get; set; }
 
     public AccessTokenId AccessTokenId { get; set; }
     public RefreshToken RefreshToken { get; set; }
@@ -25,6 +24,9 @@ public class UserSession : TimestampedEntity
 
     public UserId UserId { get; set; }
     public User? User { get; set; }
+
+    public UserExternalLoginId? ExternalLoginId { get; set; }
+    public UserExternalLogin? ExternalLogin { get; set; }
 }
 
 public class UserSessionConfiguration : IEntityTypeConfiguration<UserSession>
@@ -37,9 +39,16 @@ public class UserSessionConfiguration : IEntityTypeConfiguration<UserSession>
         builder.Property(x => x.IpAddress).HasMaxLength(45);
         builder.Property(x => x.UserAgent).HasMaxLength(512);
         builder.Property(x => x.Status).HasMaxLength(16);
-        builder.Property(x => x.Provider).HasMaxLength(16);
         builder.Property(x => x.AccessTokenId).HasMaxLength(36);
         builder.Property(x => x.AccessTokenId).HasMaxLength(36);
         builder.Property(x => x.RefreshToken).HasMaxLength(44);
+
+        builder.HasIndex(x => x.UserId);
+        builder.HasIndex(x => x.ExternalLoginId);
+
+        builder.HasOne(x => x.ExternalLogin)
+            .WithMany()
+            .HasForeignKey(x => x.ExternalLoginId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

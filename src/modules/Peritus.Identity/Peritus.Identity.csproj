@@ -11,16 +11,27 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\common\Peritus.Cache\Peritus.Cache.csproj"/>
     <ProjectReference Include="..\..\common\Peritus.Guard\Peritus.Guard.csproj"/>
     <ProjectReference Include="..\..\common\Peritus.Persistence\Peritus.Persistence.csproj"/>
     <ProjectReference Include="..\..\common\Peritus.Primitives\Peritus.Primitives.csproj"/>
     <ProjectReference Include="..\..\common\Peritus.Results\Peritus.Results.csproj"/>
+    <ProjectReference Include="..\Peritus.Notification\Peritus.Notification.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL"/>
     <PackageReference Include="EFCore.NamingConventions"/>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL"/>
+    <PackageReference Include="Otp.NET"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="IdentityOptions = Peritus.Identity.Options.IdentityOptions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Persistence\Scripts\*.sql"/>
   </ItemGroup>
 
 </Project>

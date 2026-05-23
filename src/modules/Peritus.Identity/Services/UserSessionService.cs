@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Peritus.Identity.Options;
 using Peritus.Identity.Persistence;
@@ -12,18 +13,19 @@ namespace Peritus.Identity.Services;
 public class UserSessionService(
     IdentityDbContext db,
     ITokenService tokenService,
-    IOptions<RefreshTokenOptions> refreshTokenOptions,
+    IOptions<IdentityOptions> identityOptions,
     TimeProvider timeProvider
 ) : IUserSessionService
 {
-    private readonly RefreshTokenOptions _refreshTokenOptions = refreshTokenOptions.Value;
+    private readonly IdentityOptions _options = identityOptions.Value;
 
-    public async Task<AuthTokenPair> CreateAsync(UserId userId, IpAddress? ip, UserAgent userAgent,
-        UserSessionProvider tokensProvider, CancellationToken ct = default)
+    public async Task<SessionCreationResult> CreateAsync(UserId userId, IpAddress? ip, UserAgent userAgent,
+        UserExternalLoginId? externalLoginId = null, CancellationToken ct = default)
     {
         var accessTokenId = AccessTokenId.Create();
         var authTokens = await tokenService.GenerateTokensAsync(userId, accessTokenId, ct);
         var utcNow = timeProvider.GetUtcNow().UtcDateTime;
+        var expiredAt = utcNow.AddSeconds(_options.RefreshTokenExpirySeconds);
 
         await db.UserSessions.AddAsync(
             new UserSession
@@ -34,12 +36,18 @@ public class UserSessionService(
                 AccessTokenId = accessTokenId,
                 RefreshToken = authTokens.RefreshToken,
                 Status = UserSessionStatus.Confirmed,
-                Provider = tokensProvider,
-                ExpiredAt = utcNow.AddSeconds(_refreshTokenOptions.ExpirySeconds)
+                ExternalLoginId = externalLoginId,
+                ExpiredAt = expiredAt
             }, ct);
 
         await db.SaveChangesAsync(ct);
 
-        return authTokens;
+        return new SessionCreationResult(accessTokenId, authTokens, expiredAt);
+    }
+
+    public async Task<UserSession?> FindByAccessTokenIdAsync(AccessTokenId accessTokenId, CancellationToken ct = default)
+    {
+        return await db.UserSessions
+            .SingleOrDefaultAsync(s => s.AccessTokenId == accessTokenId, ct);
     }
 }

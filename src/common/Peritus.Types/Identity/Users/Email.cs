@@ -10,4 +10,9 @@ namespace Peritus.Types.Identity.Users;
 public readonly record struct Email(string Value) : IStringValue
 {
     public static implicit operator string(Email email) => email.Value;
+
+    public Email Normalize()
+    {
+        return new Email(Value.ToLowerInvariant().Trim());
+    }
 }

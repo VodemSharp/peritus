@@ -3,8 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Peritus.Identity.Features.Accounts;
 using Peritus.Identity.Features.Auth;
-using Peritus.Identity.Features.Users;
+using Peritus.Identity.Features.Profile;
 using Peritus.Identity.Options;
 using Peritus.Identity.Persistence;
 using Peritus.Identity.Services;
@@ -21,18 +22,40 @@ public static class IdentityExtensions
         builder.Services.AddScoped<IUserSessionService, UserSessionService>();
         builder.Services.AddScoped<ITokenService, TokenService>();
         builder.Services.AddScoped<IUserService, UserService>();
+        builder.Services.AddScoped<IUserTokenService, UserTokenService>();
+        builder.Services.AddScoped<ISessionValidator, SessionValidator>();
 
         // Features - Auth
-        builder.Services.AddScoped<RefreshTokenFeature>();
         builder.Services.AddScoped<SignInFeature>();
-        builder.Services.AddScoped<SignOutFeature>();
         builder.Services.AddScoped<SignUpFeature>();
+        builder.Services.AddScoped<TokenRefreshFeature>();
+        builder.Services.AddScoped<SignInGoogleFeature>();
+        builder.Services.AddScoped<SignInTwoFactorFeature>();
+        builder.Services.AddScoped<SignInRecoveryCodeFeature>();
+        builder.Services.AddScoped<EmailSendConfirmationFeature>();
+        builder.Services.AddScoped<EmailConfirmFeature>();
+        builder.Services.AddScoped<PasswordResetSendFeature>();
+        builder.Services.AddScoped<PasswordResetFeature>();
 
-        // Features - Users
-        builder.Services.AddScoped<GetCurrentUserFeature>();
+        // Features - Accounts
+        builder.Services.AddScoped<SignOutFeature>();
+        builder.Services.AddScoped<PasswordChangeFeature>();
+        builder.Services.AddScoped<SessionListFeature>();
+        builder.Services.AddScoped<SessionRevokeFeature>();
+        builder.Services.AddScoped<SessionRevokeAllFeature>();
+        builder.Services.AddScoped<TwoFactorEnableFeature>();
+        builder.Services.AddScoped<TwoFactorVerifySetupFeature>();
+        builder.Services.AddScoped<TwoFactorDisableFeature>();
+        builder.Services.AddScoped<TwoFactorGenerateRecoveryCodesFeature>();
+        builder.Services.AddScoped<PhoneNumberSendVerificationFeature>();
+        builder.Services.AddScoped<PhoneNumberVerifyFeature>();
+
+        // Features - Profile
+        builder.Services.AddScoped<ProfileGetFeature>();
+        builder.Services.AddScoped<ProfileUpdateFeature>();
 
         // Options
-        builder.Services.Configure<RefreshTokenOptions>(builder.Configuration.GetSection("RefreshTokenOptions"));
+        builder.Services.Configure<IdentityOptions>(builder.Configuration.GetSection("IdentityOptions"));
 
         builder.AddIdentityDbContext();
 

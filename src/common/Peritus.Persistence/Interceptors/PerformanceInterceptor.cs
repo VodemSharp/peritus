@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Peritus.Persistence.Interceptors;
 
-public class PerformanceInterceptor(ILogger<PerformanceInterceptor> logger, TimeSpan? slowQueryThreshold = null)
+public partial class PerformanceInterceptor(ILogger<PerformanceInterceptor> logger, TimeSpan? slowQueryThreshold = null)
     : DbCommandInterceptor
 {
     private readonly TimeSpan _slowQueryThreshold = slowQueryThreshold ?? TimeSpan.FromSeconds(1);
@@ -29,8 +29,10 @@ public class PerformanceInterceptor(ILogger<PerformanceInterceptor> logger, Time
 
         if (duration > _slowQueryThreshold)
         {
-            logger.LogWarning("Slow query detected: {Duration} ms. Command: {CommandText}",
-                duration.TotalMilliseconds, command.CommandText);
+            LogSlowQuery(duration.TotalMilliseconds, command.CommandText);
         }
     }
+
+    [LoggerMessage(LogLevel.Warning, "Slow query detected: {Duration} ms. Command: {CommandText}")]
+    private partial void LogSlowQuery(double duration, string commandText);
 }

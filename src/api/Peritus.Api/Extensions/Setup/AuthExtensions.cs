@@ -4,9 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Peritus.Api.Middlewares;
-using Peritus.Guard.Options;
-using Peritus.Guard.Services;
-using Peritus.Guard.Services.Abstractions;
+using IdentityOptions = Peritus.Identity.Options.IdentityOptions;
 
 namespace Peritus.Api.Extensions.Setup;
 
@@ -14,21 +12,19 @@ public static class AuthExtensions
 {
     public static WebApplicationBuilder ConfigureAuth(this WebApplicationBuilder builder)
     {
-        builder.Services.AddJwtAuthentication(builder.Configuration.GetSection(nameof(AccessTokenOptions)));
+        builder.Services.AddJwtAuthentication(builder.Configuration.GetSection("IdentityOptions"));
         builder.Services.AddAuthorization();
 
         builder.Services.AddTransient(typeof(IPasswordHasher<>), typeof(PasswordHasher<>));
-        builder.Services.AddTransient<ITokenRevoker, TokenRevoker>();
-        builder.Services.AddTransient<JwtBlacklistMiddleware>();
+        builder.Services.AddTransient<SessionValidationMiddleware>();
 
         return builder;
     }
 
     private static AuthenticationBuilder AddJwtAuthentication(this IServiceCollection services,
-        IConfigurationSection accessTokenSection, Action<JwtBearerOptions>? bearerOptions = null)
+        IConfigurationSection identitySection, Action<JwtBearerOptions>? bearerOptions = null)
     {
-        var accessTokenOptions = accessTokenSection.Get<AccessTokenOptions>()!;
-        services.Configure<AccessTokenOptions>(accessTokenSection);
+        var identityOptions = identitySection.Get<IdentityOptions>()!;
 
         var authenticationBuilder =
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
@@ -39,9 +35,9 @@ public static class AuthExtensions
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = accessTokenOptions.Issuer,
-                    ValidAudience = accessTokenOptions.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(accessTokenOptions.Key)),
+                    ValidIssuer = identityOptions.JwtIssuer,
+                    ValidAudience = identityOptions.JwtAudience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(identityOptions.JwtKey)),
                     ClockSkew = TimeSpan.Zero
                 };
 

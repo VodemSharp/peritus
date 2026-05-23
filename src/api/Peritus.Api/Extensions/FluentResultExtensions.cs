@@ -12,15 +12,15 @@ public static class FluentResultExtensions
         {
             return responseMap is null
                 ? GetSuccessResult(result.Result, successStatusCode)
-                : GetSuccessResult(responseMap.Invoke(result.Result!), successStatusCode);
+                : GetSuccessResult(responseMap.Invoke(result.Result), successStatusCode);
         }
 
-        return GetFailResult(result.Error!);
+        return GetFailResult(result.Error);
     }
 
     public static IResult ToResult(this FluentResult result, HttpStatusCode successStatusCode = HttpStatusCode.OK)
     {
-        return result.IsSuccess ? GetSuccessResult(successStatusCode) : GetFailResult(result.Error!);
+        return result.IsSuccess ? GetSuccessResult(successStatusCode) : GetFailResult(result.Error);
     }
 
     private static IResult GetFailResult(IFluentResultError error)
@@ -30,6 +30,8 @@ public static class FluentResultExtensions
             FluentNotFoundResult notFound => Results.NotFound(notFound.Detail),
             FluentValidationProblemResult validationProblem
                 => Results.ValidationProblem(validationProblem.Errors),
+            FluentValidationMessageResult validationMessage
+                => Results.Problem(validationMessage.Message, statusCode: StatusCodes.Status400BadRequest),
             FluentInternalErrorResult internalError => Results.InternalServerError(internalError.Detail),
             _ => throw new ArgumentException($"Not supported error type: {error.GetType().Name}")
         };

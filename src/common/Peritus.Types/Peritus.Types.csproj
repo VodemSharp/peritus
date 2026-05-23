@@ -10,4 +10,8 @@
     <ProjectReference Include="..\Peritus.Primitives\Peritus.Primitives.csproj"/>
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens"/>
+  </ItemGroup>
+
 </Project>

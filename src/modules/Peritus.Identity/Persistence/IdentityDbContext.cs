@@ -26,16 +26,19 @@ public class IdentityDbContext(DbContextOptions<IdentityDbContext> options) : Db
         configurationBuilder.ConfigureGuidValue<UserId>();
         configurationBuilder.ConfigureStringValue<Email>();
         configurationBuilder.ConfigureStringValue<Password>();
+        configurationBuilder.ConfigureStringValue<PhoneNumber>();
         configurationBuilder.ConfigureStringValue<CultureCode>();
-
 
         configurationBuilder.ConfigureGuidValue<UserSessionId>();
         configurationBuilder.ConfigureGuidValue<AccessTokenId>();
         configurationBuilder.ConfigureStringValue<IpAddress>();
         configurationBuilder.ConfigureStringValue<UserAgent>();
         configurationBuilder.ConfigureStringValue<UserSessionStatus>();
-        configurationBuilder.ConfigureStringValue<UserSessionProvider>();
         configurationBuilder.ConfigureStringValue<RefreshToken>();
+
+        configurationBuilder.ConfigureGuidValue<UserRecoveryCodeId>();
+        configurationBuilder.ConfigureGuidValue<UserExternalLoginId>();
+        configurationBuilder.ConfigureStringValue<ExternalLoginProvider>();
 
         #endregion
     }
@@ -56,6 +59,8 @@ public class IdentityDbContext(DbContextOptions<IdentityDbContext> options) : Db
 
         builder.ApplyConfiguration(new UserConfiguration());
         builder.ApplyConfiguration(new UserSessionConfiguration());
+        builder.ApplyConfiguration(new UserRecoveryCodeConfiguration());
+        builder.ApplyConfiguration(new UserExternalLoginConfiguration());
 
         #endregion
     }
@@ -71,6 +76,8 @@ public class IdentityDbContext(DbContextOptions<IdentityDbContext> options) : Db
 
     public DbSet<User> Users { get; set; }
     public DbSet<UserSession> UserSessions { get; set; }
+    public DbSet<UserRecoveryCode> UserRecoveryCodes { get; set; }
+    public DbSet<UserExternalLogin> UserExternalLogins { get; set; }
 
     #endregion
 }

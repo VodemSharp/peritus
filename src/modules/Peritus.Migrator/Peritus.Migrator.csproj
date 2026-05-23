@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="dbup-postgresql"/>
     <PackageReference Include="Microsoft.Extensions.Hosting"/>
   </ItemGroup>
 
@@ -15,5 +16,7 @@
     <ProjectReference Include="..\..\host\Peritus.ServiceDefaults\Peritus.ServiceDefaults.csproj"/>
     <ProjectReference Include="..\Peritus.Identity\Peritus.Identity.csproj"/>
   </ItemGroup>
+
+
 
 </Project>

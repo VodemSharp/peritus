@@ -1,16 +1,31 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Peritus.FluentResults;
+using Peritus.Identity.Options;
+using Peritus.Identity.Persistence;
 using Peritus.Identity.Services.Abstractions;
+using Peritus.Notification.Features;
+using Peritus.Persistence.Extensions;
 using Peritus.Identity.Types;
 using Peritus.Types.Identity.Users;
 using Peritus.Types.Tokens;
 
 namespace Peritus.Identity.Features.Auth;
 
-public class SignUpFeature(IUserService userService, IUserSessionService userSessionService)
+public class SignUpFeature(
+    IUserService userService,
+    IUserSessionService userSessionService,
+    IUserTokenService userTokenService,
+    ISessionValidator sessionValidator,
+    EmailSendFeature emailSendFeature,
+    IOptions<IdentityOptions> identityOptions,
+    IdentityDbContext db)
 {
+    private readonly IdentityOptions _options = identityOptions.Value;
+
     public async Task<FluentResult<Result>> ExecuteAsync(Context context, CancellationToken ct)
     {
-        var userExists = await userService.AnyAsync(context.Email);
+        var userExists = await userService.AnyByEmailAsync(context.Email, ct);
 
         if (userExists)
         {
@@ -18,20 +33,47 @@ public class SignUpFeature(IUserService userService, IUserSessionService userSes
                 "Email address is already in use.");
         }
 
-        var userId = await userService.CreateAsync(context.Email, context.Password);
-
-        var tokens = await userSessionService.CreateAsync(
-            userId,
-            context.IpAddress,
-            context.UserAgent,
-            UserSessionProvider.Credentials,
-            ct);
-
-        return FluentResult<Result>.Success(new Result
+        return await db.ExecuteInTransactionAsync(async () =>
         {
-            AccessToken = tokens.AccessToken,
-            RefreshToken = tokens.RefreshToken
-        });
+            var userId = await userService.CreateAsync(context.Email, context.Password, ct: ct);
+
+            // Send email confirmation
+            var tokenResult = await userTokenService.CreateAsync(
+                userId,
+                UserTokenType.EmailConfirmation,
+                _options.EmailConfirmationTokenExpiry,
+                ct: ct);
+
+            emailSendFeature.Execute(new EmailSendFeature.Context
+            {
+                To = context.Email.Value,
+                Subject = "Confirm your email",
+                Body = $"Your confirmation code is: {tokenResult.RawToken}"
+            });
+
+            if (_options.RequireConfirmedEmail)
+            {
+                return FluentResult<Result>.Success(new Result
+                {
+                    EmailConfirmationRequired = true
+                });
+            }
+
+            var sessionResult = await userSessionService.CreateAsync(
+                userId,
+                context.IpAddress,
+                context.UserAgent,
+                ct: ct);
+
+            await sessionValidator.SetAsync(sessionResult.AccessTokenId, sessionResult.ExpiredAt, ct);
+
+            return FluentResult<Result>.Success(new Result
+            {
+                AccessToken = sessionResult.Tokens.AccessToken,
+                RefreshToken = sessionResult.Tokens.RefreshToken,
+                EmailConfirmationRequired = false
+            });
+        }, ct);
     }
 
     public class Context
@@ -44,7 +86,8 @@ public class SignUpFeature(IUserService userService, IUserSessionService userSes
 
     public class Result
     {
-        public required AccessToken AccessToken { get; set; }
-        public required RefreshToken RefreshToken { get; set; }
+        public AccessToken? AccessToken { get; set; }
+        public RefreshToken? RefreshToken { get; set; }
+        public required bool EmailConfirmationRequired { get; set; }
     }
 }

@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Peritus.FluentResults;
 
 public class FluentResult
@@ -8,7 +10,8 @@ public class FluentResult
         Error = error;
     }
 
-    public bool IsSuccess { get; }
+    [MemberNotNullWhen(false, nameof(Error))]
+    public virtual bool IsSuccess { get; }
 
     public IFluentResultError? Error { get; }
 
@@ -27,6 +30,14 @@ public class FluentResult
                     field, [message]
                 }
             }
+        });
+    }
+
+    public static FluentResult ValidationMessage(string message)
+    {
+        return new FluentResult(false, new FluentValidationMessageResult
+        {
+            Message = message
         });
     }
 
@@ -62,6 +73,9 @@ public sealed class FluentResult<TResult> : FluentResult
         Result = result;
     }
 
+    [MemberNotNullWhen(true, nameof(Result))]
+    public override bool IsSuccess { get => base.IsSuccess; }
+
     public TResult? Result { get; }
 
     public static FluentResult<TResult> Success(TResult result)
@@ -79,6 +93,14 @@ public sealed class FluentResult<TResult> : FluentResult
                     field, [message]
                 }
             }
+        });
+    }
+
+    public static new FluentResult<TResult> ValidationMessage(string message)
+    {
+        return new FluentResult<TResult>(false, default, new FluentValidationMessageResult
+        {
+            Message = message
         });
     }
 

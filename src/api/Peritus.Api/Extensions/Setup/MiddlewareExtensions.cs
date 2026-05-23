@@ -19,7 +19,7 @@ public static class MiddlewareExtensions
             .UseMiddleware<CultureMiddleware>()
             .UseAuthentication()
             .UseAuthorization()
-            .UseMiddleware<JwtBlacklistMiddleware>();
+            .UseMiddleware<SessionValidationMiddleware>();
 
         return app;
     }

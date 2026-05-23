@@ -11,6 +11,7 @@
     <ProjectReference Include="..\..\contracts\Peritus.Identity.RestContracts\Peritus.Identity.RestContracts.csproj"/>
     <ProjectReference Include="..\..\host\Peritus.ServiceDefaults\Peritus.ServiceDefaults.csproj"/>
     <ProjectReference Include="..\..\modules\Peritus.Identity\Peritus.Identity.csproj"/>
+    <ProjectReference Include="..\..\modules\Peritus.Notification\Peritus.Notification.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -23,7 +24,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Scalar.AspNetCore"/>
-    <PackageReference Include="Serilog.AspNetCore"/>
   </ItemGroup>
 
 </Project>

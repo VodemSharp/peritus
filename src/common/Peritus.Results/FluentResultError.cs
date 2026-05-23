@@ -12,6 +12,11 @@ public class FluentValidationProblemResult : IFluentResultError
     public required Dictionary<string, string[]> Errors { get; init; }
 }
 
+public class FluentValidationMessageResult : IFluentResultError
+{
+    public required string Message { get; init; }
+}
+
 public class FluentInternalErrorResult : IFluentResultError
 {
     public string? Detail { get; init; }

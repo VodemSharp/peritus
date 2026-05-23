@@ -15,14 +15,21 @@ public class User : TimestampedEntity
     public Email Email { get; set; }
     public Email NormalizedEmail { get; init; }
 
+    public bool EmailConfirmed { get; set; }
+    public PhoneNumber? PhoneNumber { get; set; }
+    public bool PhoneNumberConfirmed { get; set; }
+    public bool TwoFactorEnabled { get; set; }
+    public string? TwoFactorSecret { get; set; }
+
     // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
     public string PasswordHash { get; set; } = null!;
 
     public CultureCode Culture { get; set; }
 
-    public DateTime LastLoginAt { get; set; }
-
     public ICollection<UserRole>? UserRoles { get; init; }
+    public ICollection<UserSession>? UserSessions { get; init; }
+    public ICollection<UserRecoveryCode>? UserRecoveryCodes { get; init; }
+    public ICollection<UserExternalLogin>? UserExternalLogins { get; init; }
 }
 
 public class UserConfiguration : IEntityTypeConfiguration<User>
@@ -43,6 +50,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.HasIndex(e => e.NormalizedEmail).IsUnique();
 
+
+        builder.Property(x => x.PhoneNumber).HasMaxLength(20);
+        builder.Property(x => x.TwoFactorSecret).HasMaxLength(64);
         builder.Property(x => x.Culture).HasMaxLength(5).IsRequired();
     }
 }

@@ -1,12 +1,12 @@
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using Peritus.Cache.Distributed;
+using Peritus.FluentResults;
 using Peritus.Guard.Claims;
-using Peritus.Guard.Options;
 using Peritus.Identity.Persistence;
 using Peritus.Identity.Services.Abstractions;
 using Peritus.Types.Identity.Users;
@@ -17,23 +17,23 @@ namespace Peritus.Identity.Services;
 public class TokenService(
     TimeProvider timeProvider,
     IdentityDbContext db,
-    IOptions<AccessTokenOptions> accessTokenOptions
+    IDistributedCacheService cache,
+    IOptions<IdentityOptions> identityOptions,
+    IUserService userService
 ) : ITokenService
 {
-    private readonly AccessTokenOptions _accessTokenOptions = accessTokenOptions.Value;
+    private readonly IdentityOptions _options = identityOptions.Value;
 
-    public async Task<ClaimsPrincipal> GetPrincipalFromExpiredTokenAsync(AccessToken token)
+    public async Task<FluentResult<ClaimsPrincipal>> GetPrincipalFromExpiredTokenAsync(AccessToken token)
     {
-        const string invalidTokenMessage = "Invalid token";
-
         var tokenValidationParameters = new TokenValidationParameters
         {
             ValidateAudience = true,
-            ValidAudience = _accessTokenOptions.Audience,
+            ValidAudience = _options.JwtAudience,
             ValidateIssuer = true,
-            ValidIssuer = _accessTokenOptions.Issuer,
+            ValidIssuer = _options.JwtIssuer,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_accessTokenOptions.Key)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.JwtKey)),
             ValidateLifetime = false
         };
 
@@ -42,13 +42,13 @@ public class TokenService(
 
         if (!result.IsValid)
         {
-            throw new SecurityTokenException(invalidTokenMessage);
+            return FluentResult<ClaimsPrincipal>.ValidationMessage("Invalid token");
         }
 
         var jsonToken = tokenHandler.ReadJsonWebToken(token);
-        return jsonToken.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase)
-            ? new ClaimsPrincipal(result.ClaimsIdentity)
-            : throw new SecurityTokenException(invalidTokenMessage);
+        return !jsonToken.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase)
+            ? FluentResult<ClaimsPrincipal>.ValidationMessage("Invalid token")
+            : FluentResult<ClaimsPrincipal>.Success(new ClaimsPrincipal(result.ClaimsIdentity));
     }
 
     public async Task<AuthTokenPair> GenerateTokensAsync(
@@ -59,20 +59,51 @@ public class TokenService(
             .Where(x => x.UserId == userId)
             .ToListAsync(ct);
 
+        var user = await userService.GetByIdAsync(userId, ct);
+
         var claims = userRoles
             .Select(x => new Claim(ClaimTypes.Role, x.Role!.Name))
             .ToList();
 
+        claims.Add(new Claim(CustomClaimTypes.Email, user.Email.Value));
+
         return new AuthTokenPair
         {
             AccessToken = GenerateAccessToken(userId, accessTokenId, claims),
-            RefreshToken = GenerateRefreshToken()
+            RefreshToken = RefreshToken.Generate()
         };
+    }
+
+    public async Task<string> GenerateTwoFactorTokenAsync(UserId userId, CancellationToken ct = default)
+    {
+        var token = SecureToken.Generate().Value;
+        var cacheKey = IdentityCacheKeys.TwoFactorToken(token);
+
+        await cache.SetStringAsync(
+            cacheKey,
+            userId.Value.ToString(),
+            _options.TwoFactorTokenExpiry,
+            ct);
+
+        return token;
+    }
+
+    public async Task<FluentResult<UserId>> ValidateTwoFactorTokenAsync(string token, CancellationToken ct = default)
+    {
+        var cacheKey = IdentityCacheKeys.TwoFactorToken(token);
+        var userIdValue = await cache.GetStringAsync(cacheKey, ct);
+
+        if (string.IsNullOrEmpty(userIdValue) || !Guid.TryParse(userIdValue, out var userIdGuid))
+        {
+            return FluentResult<UserId>.ValidationMessage("Invalid two-factor token.");
+        }
+
+        return FluentResult<UserId>.Success(new UserId(userIdGuid));
     }
 
     private AccessToken GenerateAccessToken(UserId userId, AccessTokenId accessTokenId, List<Claim> claims)
     {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_accessTokenOptions.Key));
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.JwtKey));
 
         var jwtClaims = new List<Claim>
         {
@@ -83,24 +114,14 @@ public class TokenService(
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(jwtClaims),
-            Issuer = _accessTokenOptions.Issuer,
-            Audience = _accessTokenOptions.Audience,
+            Issuer = _options.JwtIssuer,
+            Audience = _options.JwtAudience,
             NotBefore = timeProvider.GetUtcNow().UtcDateTime,
-            Expires = timeProvider.GetUtcNow().UtcDateTime.Add(_accessTokenOptions.Expiry),
+            Expires = timeProvider.GetUtcNow().UtcDateTime.Add(_options.AccessTokenExpiry),
             SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256)
         };
 
         var tokenHandler = new JsonWebTokenHandler();
         return new AccessToken(tokenHandler.CreateToken(tokenDescriptor));
-    }
-
-    private static RefreshToken GenerateRefreshToken()
-    {
-        var randomNumber = new byte[32];
-
-        using var rng = RandomNumberGenerator.Create();
-        rng.GetBytes(randomNumber);
-
-        return new RefreshToken(Convert.ToBase64String(randomNumber));
     }
 }
