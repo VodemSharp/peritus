@@ -3,7 +3,9 @@ using Peritus.FluentResults;
 using Peritus.Identity.Options;
 using Peritus.Identity.Services.Abstractions;
 using Peritus.Identity.Types;
-using Peritus.Notification.Features;
+using Peritus.Messaging;
+using Peritus.Messages.Notification;
+using Peritus.Messaging.Abstractions;
 using Peritus.Types.Identity.Users;
 
 namespace Peritus.Identity.Features.Accounts;
@@ -11,7 +13,7 @@ namespace Peritus.Identity.Features.Accounts;
 public class PhoneNumberSendVerificationFeature(
     IUserService userService,
     IUserTokenService userTokenService,
-    SmsSendFeature smsSendFeature,
+    IMediator mediator,
     IOptions<IdentityOptions> identityOptions)
 {
     private readonly IdentityOptions _options = identityOptions.Value;
@@ -37,11 +39,9 @@ public class PhoneNumberSendVerificationFeature(
             context.PhoneNumber,
             ct);
 
-        smsSendFeature.Execute(new SmsSendFeature.Context
-        {
-            To = context.PhoneNumber,
-            Message = $"Your verification code is: {tokenResult.RawToken}"
-        });
+        await mediator.SendAsync(new SendSmsCommand(
+            context.PhoneNumber,
+            $"Your verification code is: {tokenResult.RawToken}"), ct);
 
         return FluentResult.Success();
     }

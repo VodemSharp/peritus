@@ -1,0 +1,13 @@
+@page "/accounts/signout"
+@using Peritus.ApiClients
+@using Peritus.ApiClients.Abstractions
+@inject ITokenStorage TokenStorage
+@inject NavigationManager Navigation
+
+@code {
+    protected override void OnInitialized()
+    {
+        TokenStorage.ClearTokens();
+        Navigation.NavigateTo("/", forceLoad: true);
+    }
+}

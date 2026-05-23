@@ -4,9 +4,11 @@ using Peritus.FluentResults;
 using Peritus.Identity.Options;
 using Peritus.Identity.Persistence;
 using Peritus.Identity.Services.Abstractions;
-using Peritus.Notification.Features;
+using Peritus.Messaging;
+using Peritus.Messages.Notification;
 using Peritus.Persistence.Extensions;
 using Peritus.Identity.Types;
+using Peritus.Messaging.Abstractions;
 using Peritus.Types.Identity.Users;
 using Peritus.Types.Tokens;
 
@@ -17,7 +19,7 @@ public class SignUpFeature(
     IUserSessionService userSessionService,
     IUserTokenService userTokenService,
     ISessionValidator sessionValidator,
-    EmailSendFeature emailSendFeature,
+    IMediator mediator,
     IOptions<IdentityOptions> identityOptions,
     IdentityDbContext db)
 {
@@ -44,12 +46,10 @@ public class SignUpFeature(
                 _options.EmailConfirmationTokenExpiry,
                 ct: ct);
 
-            emailSendFeature.Execute(new EmailSendFeature.Context
-            {
-                To = context.Email.Value,
-                Subject = "Confirm your email",
-                Body = $"Your confirmation code is: {tokenResult.RawToken}"
-            });
+            await mediator.SendAsync(new SendEmailCommand(
+                context.Email.Value,
+                "Confirm your email",
+                $"Your confirmation code is: {tokenResult.RawToken}"), ct);
 
             if (_options.RequireConfirmedEmail)
             {

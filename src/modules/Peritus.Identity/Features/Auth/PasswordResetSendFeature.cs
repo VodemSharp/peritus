@@ -2,8 +2,10 @@ using Microsoft.Extensions.Options;
 using Peritus.FluentResults;
 using Peritus.Identity.Options;
 using Peritus.Identity.Services.Abstractions;
-using Peritus.Notification.Features;
+using Peritus.Messaging;
+using Peritus.Messages.Notification;
 using Peritus.Identity.Types;
+using Peritus.Messaging.Abstractions;
 using Peritus.Types.Identity.Users;
 
 namespace Peritus.Identity.Features.Auth;
@@ -11,7 +13,7 @@ namespace Peritus.Identity.Features.Auth;
 public class PasswordResetSendFeature(
     IUserService userService,
     IUserTokenService userTokenService,
-    EmailSendFeature emailSendFeature,
+    IMediator mediator,
     IOptions<IdentityOptions> identityOptions
 )
 {
@@ -33,12 +35,10 @@ public class PasswordResetSendFeature(
             _options.PasswordResetTokenExpiry,
             ct: ct);
 
-        emailSendFeature.Execute(new EmailSendFeature.Context
-        {
-            To = user.Email.Value,
-            Subject = "Reset your password",
-            Body = $"Your password reset code is: {result.RawToken}"
-        });
+        await mediator.SendAsync(new SendEmailCommand(
+            user.Email.Value,
+            "Reset your password",
+            $"Your password reset code is: {result.RawToken}"), ct);
 
         return FluentResult.Success();
     }

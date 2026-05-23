@@ -13,10 +13,11 @@
   <ItemGroup>
     <ProjectReference Include="..\..\common\Peritus.Cache\Peritus.Cache.csproj"/>
     <ProjectReference Include="..\..\common\Peritus.Guard\Peritus.Guard.csproj"/>
+    <ProjectReference Include="..\..\common\Peritus.Messaging\Peritus.Messaging.csproj"/>
     <ProjectReference Include="..\..\common\Peritus.Persistence\Peritus.Persistence.csproj"/>
     <ProjectReference Include="..\..\common\Peritus.Primitives\Peritus.Primitives.csproj"/>
     <ProjectReference Include="..\..\common\Peritus.Results\Peritus.Results.csproj"/>
-    <ProjectReference Include="..\Peritus.Notification\Peritus.Notification.csproj"/>
+    <ProjectReference Include="..\..\messages\Peritus.Messages.Notification\Peritus.Messages.Notification.csproj" />
   </ItemGroup>
 
   <ItemGroup>
