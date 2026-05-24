@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.IdentityModel.JsonWebTokens;
-using Peritus.ApiClients;
 using Peritus.ApiClients.Abstractions;
 
 namespace Peritus.Web.Services;

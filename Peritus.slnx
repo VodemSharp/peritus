@@ -1,49 +1,49 @@
 <Solution>
   <Folder Name="/config/">
-    <File Path=".editorconfig" />
-    <File Path="CLAUDE.md" />
-    <File Path="Directory.Packages.props" />
+    <File Path=".editorconfig"/>
+    <File Path="CLAUDE.md"/>
+    <File Path="Directory.Packages.props"/>
   </Folder>
   <Folder Name="/src/">
-    <Project Path="src/Peritus.AppHost/Peritus.AppHost.csproj" />
+    <Project Path="src/Peritus.AppHost/Peritus.AppHost.csproj"/>
   </Folder>
   <Folder Name="/src/apps/">
-    <Project Path="src/apps/Peritus.Api/Peritus.Api.csproj" />
-    <Project Path="src/apps/Peritus.Web/Peritus.Web.csproj" />
+    <Project Path="src/apps/Peritus.Api/Peritus.Api.csproj"/>
+    <Project Path="src/apps/Peritus.Web/Peritus.Web.csproj"/>
   </Folder>
   <Folder Name="/src/common/">
-    <Project Path="src/common/Peritus.OpenApi/Peritus.OpenApi.csproj" />
-    <Project Path="src/common/Peritus.Persistence/Peritus.Persistence.csproj" />
-    <Project Path="src/common/Peritus.Guard/Peritus.Guard.csproj" />
-    <Project Path="src/common/Peritus.Primitives/Peritus.Primitives.csproj" />
-    <Project Path="src/common/Peritus.Results/Peritus.Results.csproj" />
-    <Project Path="src/common/Peritus.Types/Peritus.Types.csproj" />
-    <Project Path="src/common/Peritus.Cache/Peritus.Cache.csproj" />
-    <Project Path="src/common/Peritus.Messaging/Peritus.Messaging.csproj" />
-    <Project Path="src/common/Peritus.ServiceDefaults/Peritus.ServiceDefaults.csproj" />
+    <Project Path="src/common/Peritus.OpenApi/Peritus.OpenApi.csproj"/>
+    <Project Path="src/common/Peritus.Persistence/Peritus.Persistence.csproj"/>
+    <Project Path="src/common/Peritus.Guard/Peritus.Guard.csproj"/>
+    <Project Path="src/common/Peritus.Primitives/Peritus.Primitives.csproj"/>
+    <Project Path="src/common/Peritus.Results/Peritus.Results.csproj"/>
+    <Project Path="src/common/Peritus.Types/Peritus.Types.csproj"/>
+    <Project Path="src/common/Peritus.Cache/Peritus.Cache.csproj"/>
+    <Project Path="src/common/Peritus.Messaging/Peritus.Messaging.csproj"/>
+    <Project Path="src/common/Peritus.ServiceDefaults/Peritus.ServiceDefaults.csproj"/>
   </Folder>
   <Folder Name="/src/contracts/">
-    <Project Path="src/contracts/Peritus.ApiClients/Peritus.ApiClients.csproj" />
-    <Project Path="src/contracts/Peritus.ApiContracts.Identity/Peritus.ApiContracts.Identity.csproj" />
+    <Project Path="src/contracts/Peritus.ApiClients/Peritus.ApiClients.csproj"/>
+    <Project Path="src/contracts/Peritus.ApiContracts.Identity/Peritus.ApiContracts.Identity.csproj"/>
   </Folder>
   <Folder Name="/src/messages/">
-    <Project Path="src/messages/Peritus.Messages.Notification/Peritus.Messages.Notification.csproj" />
+    <Project Path="src/messages/Peritus.Messages.Notification/Peritus.Messages.Notification.csproj"/>
   </Folder>
   <Folder Name="/src/migrators/">
-    <Project Path="src/migrators/Peritus.Migrator/Peritus.Migrator.csproj" />
+    <Project Path="src/migrators/Peritus.Migrator/Peritus.Migrator.csproj"/>
   </Folder>
   <Folder Name="/src/modules/">
-    <Project Path="src/modules/Peritus.Identity/Peritus.Identity.csproj" />
-    <Project Path="src/modules/Peritus.Notification/Peritus.Notification.csproj" />
+    <Project Path="src/modules/Peritus.Identity/Peritus.Identity.csproj"/>
+    <Project Path="src/modules/Peritus.Notification/Peritus.Notification.csproj"/>
   </Folder>
-  <Folder Name="/tests/" />
+  <Folder Name="/tests/"/>
   <Folder Name="/tests/api/">
-    <Project Path="tests/api/Peritus.Api.IntegrationTests/Peritus.Api.IntegrationTests.csproj" />
+    <Project Path="tests/api/Peritus.Api.IntegrationTests/Peritus.Api.IntegrationTests.csproj"/>
   </Folder>
   <Folder Name="/tests/common/">
-    <Project Path="tests/common/Peritus.IntegrationTests/Peritus.IntegrationTests.csproj" />
+    <Project Path="tests/common/Peritus.IntegrationTests/Peritus.IntegrationTests.csproj"/>
   </Folder>
   <Folder Name="/tests/modules/">
-    <Project Path="tests\modules\Peritus.Identity.IntegrationTests\Peritus.Identity.IntegrationTests.csproj" />
+    <Project Path="tests\modules\Peritus.Identity.IntegrationTests\Peritus.Identity.IntegrationTests.csproj"/>
   </Folder>
 </Solution>

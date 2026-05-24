@@ -1,8 +1,8 @@
 using System.Security.Claims;
 using Peritus.Api.Extensions;
+using Peritus.ApiContracts.Identity.Accounts;
 using Peritus.Guard.Extensions;
 using Peritus.Identity.Features.Accounts;
-using Peritus.ApiContracts.Identity.Accounts;
 
 namespace Peritus.Api.Endpoints.Accounts;
 

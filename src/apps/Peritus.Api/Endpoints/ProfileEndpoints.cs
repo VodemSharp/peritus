@@ -1,8 +1,8 @@
 using System.Security.Claims;
 using Peritus.Api.Extensions;
+using Peritus.ApiContracts.Identity.Profile;
 using Peritus.Guard.Extensions;
 using Peritus.Identity.Features.Profile;
-using Peritus.ApiContracts.Identity.Profile;
 using Peritus.Types.Localization;
 
 namespace Peritus.Api.Endpoints;

@@ -13,8 +13,8 @@ public class UserRecoveryCode : ICreatedEntity
     public UserId UserId { get; set; }
     public string CodeHash { get; set; } = null!;
     public DateTime? RedeemedAt { get; set; }
-    public DateTime CreatedAt { get; set; }
     public User User { get; set; } = null!;
+    public DateTime CreatedAt { get; set; }
 }
 
 public class UserRecoveryCodeConfiguration : IEntityTypeConfiguration<UserRecoveryCode>

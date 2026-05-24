@@ -28,7 +28,11 @@ public class UserExternalLoginConfiguration : IEntityTypeConfiguration<UserExter
         builder.Property(x => x.ProviderKey).HasMaxLength(256);
         builder.Property(x => x.ProviderDisplayName).HasMaxLength(256);
 
-        builder.HasIndex(x => new { x.Provider, x.ProviderKey }).IsUnique();
+        builder.HasIndex(x => new
+        {
+            x.Provider,
+            x.ProviderKey
+        }).IsUnique();
         builder.HasIndex(x => x.UserId);
     }
 }

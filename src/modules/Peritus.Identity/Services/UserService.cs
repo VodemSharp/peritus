@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Peritus.Identity.Persistence;
-using Peritus.Identity.Persistence.Entities.Users;
 using Peritus.Identity.Persistence.Entities.Roles;
+using Peritus.Identity.Persistence.Entities.Users;
 using Peritus.Identity.Services.Abstractions;
 using Peritus.Types.Identity.Roles;
 using Peritus.Types.Identity.Users;
@@ -20,7 +20,12 @@ public class UserService(
         await db.SaveChangesAsync(ct);
     }
 
-    public async Task<UserId> CreateAsync(Email email, Password password, List<RoleName>? roleNames = null, Culture? culture = null, CancellationToken ct = default)
+    public async Task<UserId> CreateAsync(
+        Email email,
+        Password password,
+        List<RoleName>? roleNames = null,
+        Culture? culture = null,
+        CancellationToken ct = default)
     {
         var roleIds = new List<RoleId>();
         culture ??= Culture.Default;
@@ -38,7 +43,10 @@ public class UserService(
         {
             Email = email,
             Culture = culture.Value.Code,
-            UserRoles = roleIds.Select(x => new UserRole { RoleId = x }).ToList()
+            UserRoles = roleIds.Select(x => new UserRole
+            {
+                RoleId = x
+            }).ToList()
         };
 
         user.PasswordHash = passwordHasher.HashPassword(user, password);
@@ -51,7 +59,7 @@ public class UserService(
     public async Task<User> GetByIdAsync(UserId userId, CancellationToken ct = default)
     {
         return await db.Users.FindAsync([userId], ct)
-            ?? throw new InvalidOperationException($"User not found: {userId}");
+               ?? throw new InvalidOperationException($"User not found: {userId}");
     }
 
     public async Task<User?> FindByEmailAsync(Email email, CancellationToken ct = default)

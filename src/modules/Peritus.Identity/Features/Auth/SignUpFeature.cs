@@ -1,14 +1,11 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Peritus.FluentResults;
-using Peritus.Identity.Options;
 using Peritus.Identity.Persistence;
 using Peritus.Identity.Services.Abstractions;
-using Peritus.Messaging;
-using Peritus.Messages.Notification;
-using Peritus.Persistence.Extensions;
 using Peritus.Identity.Types;
+using Peritus.Messages.Notification;
 using Peritus.Messaging.Abstractions;
+using Peritus.Persistence.Extensions;
 using Peritus.Types.Identity.Users;
 using Peritus.Types.Tokens;
 
@@ -41,10 +38,7 @@ public class SignUpFeature(
 
             // Send email confirmation
             var tokenResult = await userTokenService.CreateAsync(
-                userId,
-                UserTokenType.EmailConfirmation,
-                _options.EmailConfirmationTokenExpiry,
-                ct: ct);
+                userId, UserTokenType.EmailConfirmation, _options.EmailConfirmationTokenExpiry, ct: ct);
 
             await mediator.SendAsync(new SendEmailCommand(
                 context.Email.Value,
@@ -60,10 +54,7 @@ public class SignUpFeature(
             }
 
             var sessionResult = await userSessionService.CreateAsync(
-                userId,
-                context.IpAddress,
-                context.UserAgent,
-                ct: ct);
+                userId, context.IpAddress, context.UserAgent, ct: ct);
 
             await sessionValidator.SetAsync(sessionResult.AccessTokenId, sessionResult.ExpiredAt, ct);
 

@@ -1,6 +1,6 @@
 using Peritus.Api.Extensions;
-using Peritus.Identity.Features.Auth;
 using Peritus.ApiContracts.Identity.Auth;
+using Peritus.Identity.Features.Auth;
 
 namespace Peritus.Api.Endpoints.Auth;
 

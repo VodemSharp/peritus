@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Options;
 using Peritus.FluentResults;
 using Peritus.Identity.Helpers;
-using Peritus.Identity.Options;
 using Peritus.Identity.Services.Abstractions;
 using Peritus.Types.Identity.Users;
 

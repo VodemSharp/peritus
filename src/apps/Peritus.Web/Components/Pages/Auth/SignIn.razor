@@ -1,8 +1,8 @@
 @page "/auth/signin"
-@using Peritus.Types.Identity.Users
 @using Peritus.ApiClients.Abstractions
 @using Peritus.ApiContracts.Identity
 @using Peritus.ApiContracts.Identity.Auth
+@using Peritus.Types.Identity.Users
 @inject IIdentityApi Api
 @inject ITokenStorage TokenStorage
 @inject NavigationManager Navigation
@@ -20,7 +20,7 @@
 
         @if (_requiresTwoFactor)
         {
-            <EditForm Model="TwoFactor" FormName="TwoFactorSignIn" OnSubmit="SubmitTwoFactorAsync" method="post" Enhance>
+            <EditForm Model="TwoFactor" FormName="TwoFactorSignIn" OnSubmit="SubmitTwoFactorAsync" Enhance>
                 <DataAnnotationsValidator/>
                 <ValidationSummary class="text-danger"/>
 
@@ -37,7 +37,7 @@
         }
         else
         {
-            <EditForm Model="Input" FormName="SignIn" OnSubmit="SubmitAsync" method="post" Enhance>
+            <EditForm Model="Input" FormName="SignIn" OnSubmit="SubmitAsync" Enhance>
                 <DataAnnotationsValidator/>
                 <ValidationSummary class="text-danger"/>
 
@@ -48,7 +48,8 @@
                 </div>
 
                 <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.Password" type="password" class="form-control" autocomplete="current-password"/>
+                    <InputText @bind-Value="Input.Password" type="password" class="form-control"
+                               autocomplete="current-password"/>
                     <label>Password</label>
                     <ValidationMessage For="() => Input.Password" class="text-danger"/>
                 </div>
@@ -64,14 +65,13 @@
 </div>
 
 @code {
+
     [SupplyParameterFromQuery(Name = "returnUrl")]
     public string? ReturnUrl { get; set; }
 
-    [SupplyParameterFromForm]
-    public SignInInput Input { get; set; } = null!;
+    [SupplyParameterFromForm] public SignInInput Input { get; set; } = null!;
 
-    [SupplyParameterFromForm]
-    public TwoFactorInput TwoFactor { get; set; } = null!;
+    [SupplyParameterFromForm] public TwoFactorInput TwoFactor { get; set; } = null!;
 
     private string? _errorMessage;
     private string? _twoFactorToken;
@@ -101,7 +101,7 @@
         }
 
         TokenStorage.SetTokens(response.Content.AccessToken!.Value, response.Content.RefreshToken!.Value);
-        Navigation.NavigateTo(GetReturnUrl(), forceLoad: true);
+        Navigation.NavigateTo(GetReturnUrl(), true);
     }
 
     public async Task SubmitTwoFactorAsync()
@@ -121,7 +121,7 @@
         }
 
         TokenStorage.SetTokens(response.Content.AccessToken, response.Content.RefreshToken);
-        Navigation.NavigateTo(GetReturnUrl(), forceLoad: true);
+        Navigation.NavigateTo(GetReturnUrl(), true);
     }
 
     private string GetReturnUrl()
@@ -130,23 +130,20 @@
         {
             return Uri.UnescapeDataString(ReturnUrl);
         }
+
         return "/";
     }
 
     public class SignInInput
     {
-        [Required, EmailAddress]
-        public string? Email { get; set; }
-
-        [Required]
-        public string? Password { get; set; }
+        [Required] [EmailAddress] public string? Email { get; set; }
+        [Required] public string? Password { get; set; }
     }
 
     public class TwoFactorInput
     {
         public string? TwoFactorToken { get; set; }
-
-        [Required]
-        public string? Code { get; set; }
+        [Required] public string? Code { get; set; }
     }
+
 }

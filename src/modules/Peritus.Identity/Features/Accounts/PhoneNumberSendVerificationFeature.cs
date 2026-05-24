@@ -1,9 +1,7 @@
 using Microsoft.Extensions.Options;
 using Peritus.FluentResults;
-using Peritus.Identity.Options;
 using Peritus.Identity.Services.Abstractions;
 using Peritus.Identity.Types;
-using Peritus.Messaging;
 using Peritus.Messages.Notification;
 using Peritus.Messaging.Abstractions;
 using Peritus.Types.Identity.Users;

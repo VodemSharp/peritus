@@ -6,7 +6,6 @@ using Microsoft.Extensions.Hosting;
 using Peritus.Identity.Features.Accounts;
 using Peritus.Identity.Features.Auth;
 using Peritus.Identity.Features.Profile;
-using Peritus.Identity.Options;
 using Peritus.Identity.Persistence;
 using Peritus.Identity.Services;
 using Peritus.Identity.Services.Abstractions;

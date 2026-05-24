@@ -4,7 +4,6 @@ using Peritus.Identity.IntegrationTests.Abstractions;
 using Peritus.Identity.Types;
 using Peritus.IntegrationTests.Assertions;
 using Peritus.IntegrationTests.Fixtures;
-using Peritus.IntegrationTests.Types;
 using Peritus.Types.Identity.Users;
 
 namespace Peritus.Identity.IntegrationTests.Scenarios.Users;
@@ -112,7 +111,10 @@ public class PhoneNumberVerificationTests(InfrastructureFixture fixture)
         }, _ct);
 
         var rawCode = TokenCapture.Get(UserTokenType.PhoneNumberVerification)!;
-        await api.ConfirmPhoneNumberAsync(new PhoneNumberVerifyRequest { Code = rawCode }, _ct);
+        await api.ConfirmPhoneNumberAsync(new PhoneNumberVerifyRequest
+        {
+            Code = rawCode
+        }, _ct);
 
         // Act
         var response = await api.SendPhoneNumberVerificationAsync(new PhoneNumberVerificationRequest

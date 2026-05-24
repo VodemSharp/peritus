@@ -13,7 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\common\Peritus.Results\Peritus.Results.csproj"/>
     <ProjectReference Include="..\..\common\Peritus.Messaging\Peritus.Messaging.csproj"/>
-    <ProjectReference Include="..\..\messages\Peritus.Messages.Notification\Peritus.Messages.Notification.csproj" />
+    <ProjectReference Include="..\..\messages\Peritus.Messages.Notification\Peritus.Messages.Notification.csproj"/>
   </ItemGroup>
 
 </Project>

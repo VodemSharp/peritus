@@ -25,7 +25,7 @@ public static class TotpHelper
     {
         var key = Base32Encoding.ToBytes(secret);
         var totp = new Totp(key);
-        return totp.VerifyTotp(code, out _, new VerificationWindow(previous: 1, future: 1));
+        return totp.VerifyTotp(code, out _, new VerificationWindow(1, 1));
     }
 
     public static string[] GenerateRecoveryCodes(int count = 10)
@@ -43,6 +43,7 @@ public static class TotpHelper
             {
                 code.Append(chars[b % chars.Length]);
             }
+
             codes[i] = code.ToString();
         }
 

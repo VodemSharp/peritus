@@ -11,5 +11,4 @@ public static class TokenHasher
         var hash = SHA256.HashData(bytes);
         return Convert.ToHexString(hash);
     }
-
 }

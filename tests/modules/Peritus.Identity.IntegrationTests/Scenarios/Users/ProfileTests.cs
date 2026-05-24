@@ -3,7 +3,6 @@ using Peritus.ApiContracts.Identity.Profile;
 using Peritus.Identity.IntegrationTests.Abstractions;
 using Peritus.IntegrationTests.Assertions;
 using Peritus.IntegrationTests.Fixtures;
-using Peritus.IntegrationTests.Types;
 
 namespace Peritus.Identity.IntegrationTests.Scenarios.Users;
 
@@ -52,5 +51,4 @@ public class ProfileTests(InfrastructureFixture fixture)
 
         Assert.Equal("uk-UA", user.Culture);
     }
-
 }

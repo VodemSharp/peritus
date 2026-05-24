@@ -9,7 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\common\Peritus.Messaging\Peritus.Messaging.csproj"/>
     <ProjectReference Include="..\..\common\Peritus.OpenApi\Peritus.OpenApi.csproj"/>
-    <ProjectReference Include="..\..\contracts\Peritus.ApiContracts.Identity\Peritus.ApiContracts.Identity.csproj" />
+    <ProjectReference Include="..\..\contracts\Peritus.ApiContracts.Identity\Peritus.ApiContracts.Identity.csproj"/>
     <ProjectReference Include="..\..\common\Peritus.ServiceDefaults\Peritus.ServiceDefaults.csproj"/>
     <ProjectReference Include="..\..\modules\Peritus.Identity\Peritus.Identity.csproj"/>
     <ProjectReference Include="..\..\modules\Peritus.Notification\Peritus.Notification.csproj"/>

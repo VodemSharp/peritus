@@ -16,13 +16,16 @@ public interface IIdentityApi
     Task<IApiResponse<SignInResponse>> SignInAsync([Body] SignInRequest request, CancellationToken ct = default);
 
     [Post("/auth/verify-2fa")]
-    Task<IApiResponse<TwoFactorSignInResponse>> TwoFactorSignInAsync([Body] TwoFactorSignInRequest request, CancellationToken ct = default);
+    Task<IApiResponse<TwoFactorSignInResponse>> TwoFactorSignInAsync([Body] TwoFactorSignInRequest request,
+        CancellationToken ct = default);
 
     [Post("/auth/use-recovery-code")]
-    Task<IApiResponse<RecoveryCodeSignInResponse>> RecoveryCodeSignInAsync([Body] RecoveryCodeSignInRequest request, CancellationToken ct = default);
+    Task<IApiResponse<RecoveryCodeSignInResponse>> RecoveryCodeSignInAsync([Body] RecoveryCodeSignInRequest request,
+        CancellationToken ct = default);
 
     [Post("/auth/external/google")]
-    Task<IApiResponse<GoogleSignInResponse>> GoogleSignInAsync([Body] GoogleSignInRequest request, CancellationToken ct = default);
+    Task<IApiResponse<GoogleSignInResponse>> GoogleSignInAsync([Body] GoogleSignInRequest request,
+        CancellationToken ct = default);
 
     [Post("/auth/signout")]
     Task<IApiResponse> SignOutAsync(CancellationToken ct = default);
@@ -32,7 +35,8 @@ public interface IIdentityApi
         CancellationToken ct = default);
 
     [Post("/auth/emails/send-confirmation")]
-    Task<IApiResponse> SendEmailConfirmationAsync([Body] EmailConfirmationRequest request, CancellationToken ct = default);
+    Task<IApiResponse> SendEmailConfirmationAsync([Body] EmailConfirmationRequest request,
+        CancellationToken ct = default);
 
     [Post("/auth/emails/confirm")]
     Task<IApiResponse> ConfirmEmailAsync([Body] ConfirmEmailRequest request, CancellationToken ct = default);
@@ -51,7 +55,8 @@ public interface IIdentityApi
     Task<IApiResponse<EnableTwoFactorResponse>> EnableTwoFactorAsync(CancellationToken ct = default);
 
     [Post("/accounts/2fa/confirm")]
-    Task<IApiResponse<VerifyTwoFactorResponse>> ConfirmTwoFactorSetupAsync([Body] VerifyTwoFactorRequest request, CancellationToken ct = default);
+    Task<IApiResponse<VerifyTwoFactorResponse>> ConfirmTwoFactorSetupAsync([Body] VerifyTwoFactorRequest request,
+        CancellationToken ct = default);
 
     [Post("/accounts/2fa/disable")]
     Task<IApiResponse> DisableTwoFactorAsync(CancellationToken ct = default);
@@ -72,7 +77,8 @@ public interface IIdentityApi
     Task<IApiResponse> RevokeAllSessionsAsync(CancellationToken ct = default);
 
     [Post("/accounts/phones/send-verification")]
-    Task<IApiResponse> SendPhoneNumberVerificationAsync([Body] PhoneNumberVerificationRequest request, CancellationToken ct = default);
+    Task<IApiResponse> SendPhoneNumberVerificationAsync([Body] PhoneNumberVerificationRequest request,
+        CancellationToken ct = default);
 
     [Post("/accounts/phones/verify")]
     Task<IApiResponse> ConfirmPhoneNumberAsync([Body] PhoneNumberVerifyRequest request, CancellationToken ct = default);

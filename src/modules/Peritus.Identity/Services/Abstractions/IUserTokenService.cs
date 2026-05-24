@@ -6,8 +6,11 @@ namespace Peritus.Identity.Services.Abstractions;
 
 public interface IUserTokenService
 {
-    Task<UserTokenCreationResult> CreateAsync(UserId userId, UserTokenType type, TimeSpan expiry, string? value = null, CancellationToken ct = default);
-    Task<FluentResult<UserTokenInfo>> RedeemAsync(UserId userId, UserTokenType type, string rawToken, CancellationToken ct = default);
+    Task<UserTokenCreationResult> CreateAsync(UserId userId, UserTokenType type, TimeSpan expiry, string? value = null,
+        CancellationToken ct = default);
+
+    Task<FluentResult<UserTokenInfo>> RedeemAsync(UserId userId, UserTokenType type, string rawToken,
+        CancellationToken ct = default);
 }
 
 public class UserTokenCreationResult

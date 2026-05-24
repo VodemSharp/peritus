@@ -14,6 +14,9 @@ public sealed class SignInResponse
 {
     [JsonPropertyName("accessToken")] public AccessToken? AccessToken { get; init; }
     [JsonPropertyName("refreshToken")] public RefreshToken? RefreshToken { get; init; }
-    [JsonPropertyName("requiresTwoFactor")] public bool RequiresTwoFactor { get; init; }
+
+    [JsonPropertyName("requiresTwoFactor")]
+    public bool RequiresTwoFactor { get; init; }
+
     [JsonPropertyName("twoFactorToken")] public string? TwoFactorToken { get; init; }
 }

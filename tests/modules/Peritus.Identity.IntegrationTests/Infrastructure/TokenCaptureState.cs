@@ -7,11 +7,17 @@ public class TokenCaptureState
     private readonly Dictionary<UserTokenType, string> _tokens = new();
 
     public void Capture(UserTokenType type, string rawToken)
-        => _tokens[type] = rawToken;
+    {
+        _tokens[type] = rawToken;
+    }
 
     public string? Get(UserTokenType type)
-        => _tokens.TryGetValue(type, out var token) ? token : null;
+    {
+        return _tokens.TryGetValue(type, out var token) ? token : null;
+    }
 
     public void Reset()
-        => _tokens.Clear();
+    {
+        _tokens.Clear();
+    }
 }

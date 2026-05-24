@@ -1,4 +1,3 @@
-using Peritus.Messaging;
 using Peritus.Messaging.Abstractions;
 
 namespace Peritus.Messages.Notification;

@@ -74,7 +74,7 @@ public sealed class FluentResult<TResult> : FluentResult
     }
 
     [MemberNotNullWhen(true, nameof(Result))]
-    public override bool IsSuccess { get => base.IsSuccess; }
+    public override bool IsSuccess => base.IsSuccess;
 
     public TResult? Result { get; }
 

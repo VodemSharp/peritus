@@ -12,7 +12,8 @@ public class PhoneNumberVerifyFeature(
     public async Task<FluentResult> ExecuteAsync(Context context, CancellationToken ct)
     {
         var user = await userService.GetByIdAsync(context.UserId, ct);
-        var result = await userTokenService.RedeemAsync(user.Id, UserTokenType.PhoneNumberVerification, context.Code, ct);
+        var result = await userTokenService.RedeemAsync(
+            user.Id, UserTokenType.PhoneNumberVerification, context.Code, ct);
 
         if (!result.IsSuccess)
         {

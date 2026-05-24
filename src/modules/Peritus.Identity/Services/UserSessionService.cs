@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Peritus.Identity.Options;
 using Peritus.Identity.Persistence;
 using Peritus.Identity.Persistence.Entities.Users;
 using Peritus.Identity.Services.Abstractions;
@@ -45,7 +44,8 @@ public class UserSessionService(
         return new SessionCreationResult(accessTokenId, authTokens, expiredAt);
     }
 
-    public async Task<UserSession?> FindByAccessTokenIdAsync(AccessTokenId accessTokenId, CancellationToken ct = default)
+    public async Task<UserSession?> FindByAccessTokenIdAsync(
+        AccessTokenId accessTokenId, CancellationToken ct = default)
     {
         return await db.UserSessions
             .SingleOrDefaultAsync(s => s.AccessTokenId == accessTokenId, ct);

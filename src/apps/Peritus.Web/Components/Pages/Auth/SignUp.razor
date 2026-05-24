@@ -1,9 +1,8 @@
 @page "/auth/signup"
-@using Peritus.ApiClients
-@using Peritus.Types.Identity.Users
 @using Peritus.ApiClients.Abstractions
 @using Peritus.ApiContracts.Identity
 @using Peritus.ApiContracts.Identity.Auth
+@using Peritus.Types.Identity.Users
 @inject IIdentityApi Api
 @inject ITokenStorage TokenStorage
 @inject NavigationManager Navigation
@@ -19,7 +18,7 @@
             <div class="alert alert-danger">@_errorMessage</div>
         }
 
-        <EditForm Model="Input" FormName="SignUp" OnSubmit="SubmitAsync" method="post" Enhance>
+        <EditForm Model="Input" FormName="SignUp" OnSubmit="SubmitAsync" Enhance>
             <DataAnnotationsValidator/>
             <ValidationSummary class="text-danger"/>
 
@@ -30,13 +29,15 @@
             </div>
 
             <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Password" type="password" class="form-control" autocomplete="new-password"/>
+                <InputText @bind-Value="Input.Password" type="password" class="form-control"
+                           autocomplete="new-password"/>
                 <label>Password</label>
                 <ValidationMessage For="() => Input.Password" class="text-danger"/>
             </div>
 
             <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.ConfirmPassword" type="password" class="form-control" autocomplete="new-password"/>
+                <InputText @bind-Value="Input.ConfirmPassword" type="password" class="form-control"
+                           autocomplete="new-password"/>
                 <label>Confirm Password</label>
                 <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger"/>
             </div>
@@ -51,8 +52,7 @@
 </div>
 
 @code {
-    [SupplyParameterFromForm]
-    public SignUpInput Input { get; set; } = null!;
+    [SupplyParameterFromForm] public SignUpInput Input { get; set; } = null!;
 
     private string? _errorMessage;
 
@@ -80,18 +80,14 @@
         }
 
         TokenStorage.SetTokens(response.Content.AccessToken, response.Content.RefreshToken);
-        Navigation.NavigateTo("/", forceLoad: true);
+        Navigation.NavigateTo("/", true);
     }
 
     public class SignUpInput
     {
-        [Required, EmailAddress]
-        public string? Email { get; set; }
-
-        [Required, MinLength(8)]
-        public string? Password { get; set; }
-
-        [Required]
-        public string? ConfirmPassword { get; set; }
+        [Required] [EmailAddress] public string? Email { get; set; }
+        [Required] [MinLength(8)] public string? Password { get; set; }
+        [Required] public string? ConfirmPassword { get; set; }
     }
+
 }

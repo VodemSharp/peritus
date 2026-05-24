@@ -35,12 +35,12 @@ public partial class SessionRevokeFeature(
         return FluentResult.Success();
     }
 
+    [LoggerMessage(LogLevel.Warning, "Session not found for user {UserId}: {SessionId}")]
+    private partial void LogSessionNotFound(Guid userId, Guid sessionId);
+
     public class Context
     {
         public required UserId UserId { get; set; }
         public required UserSessionId SessionId { get; set; }
     }
-
-    [LoggerMessage(LogLevel.Warning, "Session not found for user {UserId}: {SessionId}")]
-    private partial void LogSessionNotFound(Guid userId, Guid sessionId);
 }

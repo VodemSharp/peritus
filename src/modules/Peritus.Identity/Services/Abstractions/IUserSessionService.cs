@@ -9,6 +9,7 @@ public interface IUserSessionService
 {
     Task<SessionCreationResult> CreateAsync(UserId userId, IpAddress? ip, UserAgent userAgent,
         UserExternalLoginId? externalLoginId = null, CancellationToken ct = default);
+
     Task<UserSession?> FindByAccessTokenIdAsync(AccessTokenId accessTokenId, CancellationToken ct = default);
 }
 

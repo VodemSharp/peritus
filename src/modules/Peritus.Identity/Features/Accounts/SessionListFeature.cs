@@ -3,7 +3,6 @@ using Peritus.FluentResults;
 using Peritus.Identity.Persistence;
 using Peritus.Identity.Types;
 using Peritus.Types.Identity.Users;
-using Peritus.Types.Tokens;
 
 namespace Peritus.Identity.Features.Accounts;
 

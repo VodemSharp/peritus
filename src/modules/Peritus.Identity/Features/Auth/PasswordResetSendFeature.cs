@@ -1,10 +1,8 @@
 using Microsoft.Extensions.Options;
 using Peritus.FluentResults;
-using Peritus.Identity.Options;
 using Peritus.Identity.Services.Abstractions;
-using Peritus.Messaging;
-using Peritus.Messages.Notification;
 using Peritus.Identity.Types;
+using Peritus.Messages.Notification;
 using Peritus.Messaging.Abstractions;
 using Peritus.Types.Identity.Users;
 
@@ -30,10 +28,7 @@ public class PasswordResetSendFeature(
         }
 
         var result = await userTokenService.CreateAsync(
-            user.Id,
-            UserTokenType.PasswordReset,
-            _options.PasswordResetTokenExpiry,
-            ct: ct);
+            user.Id, UserTokenType.PasswordReset, _options.PasswordResetTokenExpiry, ct: ct);
 
         await mediator.SendAsync(new SendEmailCommand(
             user.Email.Value,

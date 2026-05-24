@@ -17,7 +17,7 @@
     <ProjectReference Include="..\..\common\Peritus.Persistence\Peritus.Persistence.csproj"/>
     <ProjectReference Include="..\..\common\Peritus.Primitives\Peritus.Primitives.csproj"/>
     <ProjectReference Include="..\..\common\Peritus.Results\Peritus.Results.csproj"/>
-    <ProjectReference Include="..\..\messages\Peritus.Messages.Notification\Peritus.Messages.Notification.csproj" />
+    <ProjectReference Include="..\..\messages\Peritus.Messages.Notification\Peritus.Messages.Notification.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="IdentityOptions = Peritus.Identity.Options.IdentityOptions" />
+    <Using Include="IdentityOptions = Peritus.Identity.Options.IdentityOptions"/>
   </ItemGroup>
 
   <ItemGroup>

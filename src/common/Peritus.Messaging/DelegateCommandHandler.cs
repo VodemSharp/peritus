@@ -10,5 +10,7 @@ internal sealed class DelegateCommandHandler<TCommand, TFeature>(
     where TFeature : notnull
 {
     public Task HandleAsync(TCommand command, CancellationToken cancellationToken)
-        => handle(feature, command, cancellationToken);
+    {
+        return handle(feature, command, cancellationToken);
+    }
 }

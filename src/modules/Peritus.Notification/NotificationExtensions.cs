@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Peritus.Messages.Notification;
 using Peritus.Messaging;
 using Peritus.Notification.Features;
-using Peritus.Messages.Notification;
 
 namespace Peritus.Notification;
 

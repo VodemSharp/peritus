@@ -4,7 +4,6 @@ using Peritus.Identity.IntegrationTests.Abstractions;
 using Peritus.Identity.Types;
 using Peritus.IntegrationTests.Assertions;
 using Peritus.IntegrationTests.Fixtures;
-using Peritus.IntegrationTests.Types;
 
 namespace Peritus.Identity.IntegrationTests.Scenarios.Users;
 

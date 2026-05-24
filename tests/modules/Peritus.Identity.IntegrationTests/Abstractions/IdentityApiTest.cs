@@ -4,7 +4,6 @@ using Peritus.ApiContracts.Identity;
 using Peritus.Cache.Distributed;
 using Peritus.Identity.IntegrationTests.Infrastructure;
 using Peritus.Identity.Persistence;
-using Peritus.Identity.Services;
 using Peritus.Identity.Services.Abstractions;
 using Peritus.IntegrationTests.Abstractions;
 using Peritus.IntegrationTests.Fixtures;

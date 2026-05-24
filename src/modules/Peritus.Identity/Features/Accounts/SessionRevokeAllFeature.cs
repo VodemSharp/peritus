@@ -12,7 +12,9 @@ public class SessionRevokeAllFeature(IdentityDbContext db, ISessionValidator ses
     public async Task<FluentResult> ExecuteAsync(Context context, CancellationToken ct)
     {
         var sessions = await db.UserSessions
-            .Where(x => x.UserId == context.UserId && x.Status == UserSessionStatus.Confirmed && x.Id != context.CurrentSessionId)
+            .Where(x => x.UserId == context.UserId
+                        && x.Status == UserSessionStatus.Confirmed
+                        && x.Id != context.CurrentSessionId)
             .ToListAsync(ct);
 
         foreach (var session in sessions)

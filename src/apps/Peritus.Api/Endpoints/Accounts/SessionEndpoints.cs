@@ -1,10 +1,10 @@
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Peritus.Api.Extensions;
+using Peritus.ApiContracts.Identity.Accounts;
 using Peritus.Guard.Extensions;
 using Peritus.Identity.Features.Accounts;
 using Peritus.Identity.Persistence;
-using Peritus.ApiContracts.Identity.Accounts;
 using Peritus.Identity.Types;
 
 namespace Peritus.Api.Endpoints.Accounts;

@@ -7,7 +7,10 @@ using Peritus.Types.Identity.Users;
 
 namespace Peritus.Identity.IntegrationTests.Infrastructure;
 
-public class CapturingUserTokenService(IDistributedCacheService cache, TimeProvider timeProvider, TokenCaptureState state)
+public class CapturingUserTokenService(
+    IDistributedCacheService cache,
+    TimeProvider timeProvider,
+    TokenCaptureState state)
     : IUserTokenService
 {
     private readonly UserTokenService _inner = new(cache, timeProvider);
@@ -29,5 +32,7 @@ public class CapturingUserTokenService(IDistributedCacheService cache, TimeProvi
         UserTokenType type,
         string rawToken,
         CancellationToken ct = default)
-        => _inner.RedeemAsync(userId, type, rawToken, ct);
+    {
+        return _inner.RedeemAsync(userId, type, rawToken, ct);
+    }
 }
