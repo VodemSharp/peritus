@@ -11,8 +11,7 @@ namespace Peritus.IntegrationTests.Fixtures;
 
 public class InfrastructureFixture : IAsyncLifetime
 {
-    private readonly CancellationToken _ct = TestContext.Current.CancellationToken;
-    private readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(30);
+    private readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(120);
 
     private DistributedApplication App { get; set; } = null!;
 
@@ -23,11 +22,17 @@ public class InfrastructureFixture : IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
-        const string apiResourceName = "api";
+        using var cts = new CancellationTokenSource(_defaultTimeout);
+        var ct = cts.Token;
 
-        var appHost = await DistributedApplicationTestingBuilder.CreateAsync<Peritus_AppHost>(_ct);
-        var resource = appHost.Resources.Single(r => r.Name == apiResourceName);
-        appHost.Resources.Remove(resource);
+        var appHost = await DistributedApplicationTestingBuilder.CreateAsync<Peritus_AppHost>(ct);
+
+        // Remove API and Web resources — tests create their own WebApplicationFactory
+        var resourcesToRemove = appHost.Resources.Where(r => r.Name is "api" or "web").ToList();
+        foreach (var resource in resourcesToRemove)
+        {
+            appHost.Resources.Remove(resource);
+        }
 
         appHost.Services.AddLogging(logging =>
         {
@@ -43,23 +48,23 @@ public class InfrastructureFixture : IAsyncLifetime
             clientBuilder.AddStandardResilienceHandler();
         });
 
-        App = await appHost.BuildAsync(_ct).WaitAsync(_defaultTimeout, _ct);
-        await App.StartAsync(_ct).WaitAsync(_defaultTimeout, _ct);
+        App = await appHost.BuildAsync(ct).WaitAsync(_defaultTimeout, ct);
+        await App.StartAsync(ct).WaitAsync(_defaultTimeout, ct);
 
         await App.ResourceNotifications
-            .WaitForResourceHealthyAsync("db", _ct)
-            .WaitAsync(_defaultTimeout, _ct);
+            .WaitForResourceHealthyAsync("db", ct)
+            .WaitAsync(_defaultTimeout, ct);
 
         await App.ResourceNotifications
-            .WaitForResourceHealthyAsync("cache", _ct)
-            .WaitAsync(_defaultTimeout, _ct);
+            .WaitForResourceHealthyAsync("cache", ct)
+            .WaitAsync(_defaultTimeout, ct);
 
         await App.ResourceNotifications
-            .WaitForResourceAsync("migrator", KnownResourceStates.Finished, _ct)
-            .WaitAsync(_defaultTimeout, _ct);
+            .WaitForResourceAsync("migrator", KnownResourceStates.Finished, ct)
+            .WaitAsync(_defaultTimeout, ct);
 
-        DbConnectionString = (await App.GetConnectionStringAsync("db", _ct).AsTask())!;
-        CacheConnectionString = (await App.GetConnectionStringAsync("cache", _ct).AsTask())!;
+        DbConnectionString = (await App.GetConnectionStringAsync("db", ct).AsTask())!;
+        CacheConnectionString = (await App.GetConnectionStringAsync("cache", ct).AsTask())!;
 
         DataSource = NpgsqlDataSource.Create(DbConnectionString);
     }
@@ -71,7 +76,8 @@ public class InfrastructureFixture : IAsyncLifetime
             await DataSource.DisposeAsync();
         }
 
-        await App.StopAsync(_ct);
+        using var cts = new CancellationTokenSource(_defaultTimeout);
+        await App.StopAsync(cts.Token);
         await App.DisposeAsync();
         GC.SuppressFinalize(this);
     }

@@ -2,8 +2,8 @@ using System.Data;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
-using Peritus.Identity.RestContracts;
-using Peritus.Identity.RestContracts.Auth;
+using Peritus.ApiContracts.Identity;
+using Peritus.ApiContracts.Identity.Auth;
 using Peritus.IntegrationTests.Fixtures;
 using Peritus.IntegrationTests.Types;
 using Peritus.Types.Tokens;
@@ -84,7 +84,7 @@ public abstract class ApiTest(InfrastructureFixture fixture) : IAsyncLifetime
             }, ct);
 
         // ReSharper disable once InvertIf
-        if (!response.IsSuccessStatusCode)
+        if (!response.IsSuccessful)
         {
             var errorMessage = response.Error?.Content;
             throw new InvalidOperationException($"Failed to create user: {errorMessage}");
@@ -104,16 +104,13 @@ public abstract class ApiTest(InfrastructureFixture fixture) : IAsyncLifetime
             });
 
         // ReSharper disable once InvertIf
-        if (!response.IsSuccessStatusCode || response.Content is null)
+        if (!response.IsSuccessful || response.Content is null)
         {
             var errorMessage = response.Error?.Content;
             throw new InvalidOperationException($"Failed to sign in: {errorMessage}");
         }
 
-        return new AuthTokenPair(
-            new AccessToken(response.Content.AccessToken),
-            new RefreshToken(response.Content.RefreshToken)
-        );
+        return new AuthTokenPair(response.Content.AccessToken!.Value, response.Content.RefreshToken!.Value);
     }
 
     private void ConfigureServicesInternal(IServiceCollection services)
@@ -132,10 +129,10 @@ public abstract class ApiTest(InfrastructureFixture fixture) : IAsyncLifetime
                 "ConnectionStrings:cache", fixture.CacheConnectionString
             },
             {
-                "AccessTokenOptions:ExpirySeconds", "3600"
+                "IdentityOptions:AccessTokenExpirySeconds", "3600"
             },
             {
-                "RefreshTokenOptions:ExpirySeconds", "86400"
+                "IdentityOptions:RefreshTokenExpirySeconds", "86400"
             }
         };
     }

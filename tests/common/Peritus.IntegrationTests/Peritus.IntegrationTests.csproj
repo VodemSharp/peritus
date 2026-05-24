@@ -19,13 +19,14 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="JetBrains.Annotations"/>
     <PackageReference Include="xunit.v3.assert"/>
     <PackageReference Include="xunit.v3.extensibility.core"/>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\api\Peritus.Api\Peritus.Api.csproj"/>
-    <ProjectReference Include="..\..\..\src\host\Peritus.AppHost\Peritus.AppHost.csproj"/>
+    <ProjectReference Include="..\..\..\src\apps\Peritus.Api\Peritus.Api.csproj"/>
+    <ProjectReference Include="..\..\..\src\Peritus.AppHost\Peritus.AppHost.csproj"/>
   </ItemGroup>
 
 </Project>

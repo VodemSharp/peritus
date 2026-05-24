@@ -25,7 +25,8 @@ public class GetCurrentUserTests(InfrastructureFixture fixture)
         var response = await api.GetCurrentUserAsync(_ct);
 
         // Assert
-        ApiAssert.Success(response, user => { Assert.Equal(credentials.Email, user.Email); });
+        var user = ApiAssert.Success(response);
+        Assert.Equal(credentials.Email, user.Email);
     }
 
     [Fact]

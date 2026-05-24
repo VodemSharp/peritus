@@ -19,7 +19,6 @@ public class ApiHealthTest(InfrastructureFixture fixture) : ApiTest(fixture), IC
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.True(response.IsSuccessStatusCode);
 
         var content = await response.Content.ReadAsStringAsync(_ct);
         Assert.Equal("Healthy", content.Trim());

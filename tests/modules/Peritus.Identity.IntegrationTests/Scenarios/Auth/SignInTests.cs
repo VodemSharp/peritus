@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Peritus.ApiContracts.Identity.Auth;
 using Peritus.Identity.IntegrationTests.Abstractions;
 using Peritus.Identity.IntegrationTests.Assertions;
-using Peritus.Identity.RestContracts.Auth;
 using Peritus.Identity.Types;
 using Peritus.IntegrationTests.Assertions;
 using Peritus.IntegrationTests.Fixtures;
@@ -30,11 +30,9 @@ public class SignInTests(InfrastructureFixture fixture) : IdentityApiTest(fixtur
         var response = await api.SignInAsync(request, _ct);
 
         // Assert
-        ApiAssert.Success(response, tokens =>
-        {
-            JwtAssert.Valid(tokens.AccessToken);
-            Assert.NotEmpty(tokens.RefreshToken.Value);
-        });
+        var tokens = ApiAssert.Success(response);
+        JwtAssert.Valid(tokens.AccessToken!.Value);
+        Assert.NotEmpty(tokens.RefreshToken!.Value.Value);
     }
 
     [Fact]
@@ -54,7 +52,7 @@ public class SignInTests(InfrastructureFixture fixture) : IdentityApiTest(fixtur
         var response = await api.SignInAsync(request, _ct);
 
         // Assert
-        await ApiAssert.ValidationErrorAsync(response, nameof(SignInRequest.Password), "Invalid credentials!");
+        await ApiAssert.ValidationErrorAsync(response, nameof(SignInRequest.Password), "Invalid credentials.");
     }
 
     [Fact]
@@ -74,18 +72,16 @@ public class SignInTests(InfrastructureFixture fixture) : IdentityApiTest(fixtur
         var response = await api.SignInAsync(request, _ct);
 
         // Assert
-        await ApiAssert.SuccessAsync(response, async tokens =>
-        {
-            await using var db = CreateIdentityDbContext();
-            var userSession = await db.UserSessions
-                .Include(x => x.User)
-                .Where(x => x.RefreshToken == tokens.RefreshToken)
-                .SingleAsync(_ct);
+        var tokens = ApiAssert.Success(response);
+        await using var db = CreateIdentityDbContext();
+        var userSession = await db.UserSessions
+            .Include(x => x.User)
+            .Where(x => x.RefreshToken == tokens.RefreshToken)
+            .SingleAsync(_ct);
 
-            Assert.Equal(credentials.Email, userSession.User!.Email);
-            Assert.Equal(UserSessionStatus.Confirmed, userSession.Status);
-            Assert.True(userSession.CreatedAt <= UtcNow);
-        });
+        Assert.Equal(credentials.Email, userSession.User!.Email);
+        Assert.Equal(UserSessionStatus.Confirmed, userSession.Status);
+        Assert.True(userSession.CreatedAt <= UtcNow);
     }
 
     [Fact]

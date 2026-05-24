@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Peritus.ApiContracts.Identity.Auth;
 using Peritus.Identity.IntegrationTests.Abstractions;
-using Peritus.Identity.RestContracts.Auth;
 using Peritus.IntegrationTests.Assertions;
 using Peritus.IntegrationTests.Fixtures;
 using Peritus.IntegrationTests.Types;
@@ -29,11 +29,9 @@ public class SignUpTests(InfrastructureFixture fixture)
         var response = await api.SignUpAsync(request, _ct);
 
         // Assert
-        ApiAssert.Success(response, tokens =>
-        {
-            Assert.False(string.IsNullOrWhiteSpace(tokens.AccessToken));
-            Assert.False(string.IsNullOrWhiteSpace(tokens.RefreshToken));
-        });
+        var tokens = ApiAssert.Success(response);
+        Assert.False(string.IsNullOrWhiteSpace(tokens.AccessToken));
+        Assert.False(string.IsNullOrWhiteSpace(tokens.RefreshToken));
     }
 
     [Fact]
@@ -52,15 +50,12 @@ public class SignUpTests(InfrastructureFixture fixture)
         var response = await api.SignUpAsync(request, _ct);
 
         // Assert
-        await ApiAssert.SuccessAsync(response, async _ =>
-        {
-            await using var db = CreateIdentityDbContext();
-            var user = await db.Users
-                .Where(u => u.Email == credentials.Email)
-                .SingleOrDefaultAsync(_ct);
-
-            Assert.NotNull(user);
-        });
+        ApiAssert.Success(response);
+        await using var db = CreateIdentityDbContext();
+        var user = await db.Users
+            .Where(u => u.Email == credentials.Email)
+            .SingleOrDefaultAsync(_ct);
+        Assert.NotNull(user);
     }
 
     [Fact]

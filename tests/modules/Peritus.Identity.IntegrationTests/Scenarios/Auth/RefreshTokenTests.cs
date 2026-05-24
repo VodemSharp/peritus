@@ -1,7 +1,7 @@
 using System.Net;
+using Peritus.ApiContracts.Identity.Auth;
 using Peritus.Identity.IntegrationTests.Abstractions;
 using Peritus.Identity.IntegrationTests.Assertions;
-using Peritus.Identity.RestContracts.Auth;
 using Peritus.IntegrationTests.Assertions;
 using Peritus.IntegrationTests.Fixtures;
 using Peritus.Types.Tokens;
@@ -31,26 +31,21 @@ public class RefreshTokenTests(InfrastructureFixture fixture)
         var response = await api.RefreshTokenAsync(request, _ct);
 
         // Assert
-        ApiAssert.Success(response, refreshedTokens =>
-        {
-            JwtAssert.Valid(refreshedTokens.AccessToken);
-            Assert.NotEqual(initialTokens.AccessToken, refreshedTokens.AccessToken);
-            Assert.NotEqual(initialTokens.RefreshToken, refreshedTokens.RefreshToken);
-        });
+        var refreshedTokens = ApiAssert.Success(response);
+        JwtAssert.Valid(refreshedTokens.AccessToken);
+        Assert.NotEqual(initialTokens.AccessToken, refreshedTokens.AccessToken);
+        Assert.NotEqual(initialTokens.RefreshToken, refreshedTokens.RefreshToken);
     }
 
     [Fact]
-    public async Task RefreshToken_AfterSignOut_FailsAsync()
+    public async Task RefreshToken_AfterSignOut_ReturnsUnauthorizedAsync()
     {
         // Arrange
         var credentials = await CreateUserAsync(_ct);
         var tokens = await SignInAsync(credentials);
         var api = CreateIdentityApi(tokens.AccessToken);
 
-        await api.SignOutAsync(new SignOutRequest
-        {
-            AccessToken = tokens.AccessToken
-        }, _ct);
+        await api.SignOutAsync(_ct);
 
         // Act
         var response = await api.RefreshTokenAsync(new RefreshTokenRequest
@@ -71,10 +66,7 @@ public class RefreshTokenTests(InfrastructureFixture fixture)
         var tokens = await SignInAsync(credentials);
         var api = CreateIdentityApi(tokens.AccessToken);
 
-        await api.SignOutAsync(new SignOutRequest
-        {
-            AccessToken = tokens.AccessToken
-        }, _ct);
+        await api.SignOutAsync(_ct);
 
         TimeProvider.Advance(TimeSpan.FromHours(2));
 
@@ -113,7 +105,7 @@ public class RefreshTokenTests(InfrastructureFixture fixture)
     }
 
     [Fact]
-    public async Task RefreshToken_WithInvalidToken_FailsAsync()
+    public async Task RefreshToken_WithInvalidToken_ReturnsNotFoundAsync()
     {
         // Arrange
         var credentials = await CreateUserAsync(_ct);
