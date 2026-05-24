@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Peritus.ApiClients.Abstractions;
 using Peritus.ApiClients.Extensions;
+using Peritus.ServiceDefaults;
 using Peritus.Types.Http;
 using Peritus.Web.Components;
 using Peritus.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.AddServiceDefaults();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -16,9 +19,6 @@ builder.Services.AddScoped<AuthenticationStateProvider, CookieAuthenticationStat
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ITokenStorage, CookieTokenStorage>();
 builder.Services.AddSingleton(TimeProvider.System);
-
-builder.Services.AddServiceDiscovery();
-builder.Services.ConfigureHttpClientDefaults(static http => http.AddServiceDiscovery());
 
 builder.Services.AddIdentityApiClient(new Uri("http://api"), HttpClientName.IdentityApiRefresh);
 
@@ -38,5 +38,7 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.MapDefaultEndpoints();
 
 app.Run();
