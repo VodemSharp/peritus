@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
 using Peritus.ApiClients.Abstractions;
 using Peritus.ApiClients.Extensions;
@@ -16,11 +17,15 @@ builder.Services.AddRazorComponents()
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, CookieAuthenticationStateProvider>();
 
+builder.Services.AddAuthentication("JwtCookie")
+    .AddScheme<AuthenticationSchemeOptions, JwtCookieAuthenticationHandler>("JwtCookie", _ => { });
+builder.Services.AddAuthorization();
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ITokenStorage, CookieTokenStorage>();
 builder.Services.AddSingleton(TimeProvider.System);
 
-builder.Services.AddIdentityApiClient(new Uri("http://api"), HttpClientName.IdentityApiRefresh);
+builder.Services.AddIdentityApiClient(new Uri("https+http://api"), HttpClientName.IdentityApiRefresh);
 
 var app = builder.Build();
 
@@ -32,6 +37,9 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseAntiforgery();
 

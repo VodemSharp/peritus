@@ -1,5 +1,6 @@
 @page "/auth/signin"
 @using Peritus.ApiClients.Abstractions
+@using Peritus.ApiClients.Models
 @using Peritus.ApiContracts.Identity
 @using Peritus.ApiContracts.Identity.Auth
 @using Peritus.Types.Identity.Users
@@ -20,14 +21,14 @@
 
         @if (_requiresTwoFactor)
         {
-            <EditForm Model="TwoFactor" FormName="TwoFactorSignIn" OnSubmit="SubmitTwoFactorAsync" Enhance>
+            <EditForm Model="TwoFactor" FormName="TwoFactorSignIn" OnValidSubmit="SubmitTwoFactorAsync" Enhance>
                 <DataAnnotationsValidator/>
                 <ValidationSummary class="text-danger"/>
 
                 <input type="hidden" name="TwoFactor.TwoFactorToken" value="@_twoFactorToken"/>
 
                 <div class="form-floating mb-3">
-                    <InputText @bind-Value="TwoFactor.Code" class="form-control" autocomplete="off"/>
+                    <InputText @bind-Value="TwoFactor!.Code" class="form-control" autocomplete="off"/>
                     <label>Authentication Code</label>
                     <ValidationMessage For="() => TwoFactor.Code" class="text-danger"/>
                 </div>
@@ -37,18 +38,18 @@
         }
         else
         {
-            <EditForm Model="Input" FormName="SignIn" OnSubmit="SubmitAsync" Enhance>
+            <EditForm Model="Input" FormName="SignIn" OnValidSubmit="SubmitAsync" Enhance>
                 <DataAnnotationsValidator/>
                 <ValidationSummary class="text-danger"/>
 
                 <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username"/>
+                    <InputText @bind-Value="Input!.Email" class="form-control" autocomplete="username"/>
                     <label>Email</label>
                     <ValidationMessage For="() => Input.Email" class="text-danger"/>
                 </div>
 
                 <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.Password" type="password" class="form-control"
+                    <InputText @bind-Value="Input!.Password" type="password" class="form-control"
                                autocomplete="current-password"/>
                     <label>Password</label>
                     <ValidationMessage For="() => Input.Password" class="text-danger"/>
@@ -69,13 +70,18 @@
     [SupplyParameterFromQuery(Name = "returnUrl")]
     public string? ReturnUrl { get; set; }
 
-    [SupplyParameterFromForm] public SignInInput Input { get; set; } = null!;
-
-    [SupplyParameterFromForm] public TwoFactorInput TwoFactor { get; set; } = null!;
+    [SupplyParameterFromForm] public SignInInput? Input { get; set; }
+    [SupplyParameterFromForm] public TwoFactorInput? TwoFactor { get; set; }
 
     private string? _errorMessage;
     private string? _twoFactorToken;
     private bool _requiresTwoFactor;
+
+    protected override void OnInitialized()
+    {
+        Input ??= new SignInInput();
+        TwoFactor ??= new TwoFactorInput();
+    }
 
     public async Task SubmitAsync()
     {
@@ -83,13 +89,13 @@
 
         var response = await Api.SignInAsync(new SignInRequest
         {
-            Email = new Email(Input.Email!),
-            Password = new Password(Input.Password!)
+            Email = new Email(Input!.Email!),
+            Password = new Password(Input!.Password!)
         });
 
-        if (!response.IsSuccessful || response.Content is null)
+        if (!response.IsSuccessful)
         {
-            _errorMessage = "Invalid credentials.";
+            _errorMessage = ApiErrorResponse.Parse(response.Error.Content) ?? "Unknown error occurred.";
             return;
         }
 
@@ -110,13 +116,13 @@
 
         var response = await Api.TwoFactorSignInAsync(new TwoFactorSignInRequest
         {
-            TwoFactorToken = TwoFactor.TwoFactorToken!,
-            Code = TwoFactor.Code!
+            TwoFactorToken = TwoFactor!.TwoFactorToken!,
+            Code = TwoFactor!.Code!
         });
 
-        if (!response.IsSuccessful || response.Content is null)
+        if (!response.IsSuccessful)
         {
-            _errorMessage = "Invalid or expired code.";
+            _errorMessage = ApiErrorResponse.Parse(response.Error.Content) ?? "Unknown error occurred.";
             return;
         }
 

@@ -1,5 +1,6 @@
 @page "/auth/signup"
 @using Peritus.ApiClients.Abstractions
+@using Peritus.ApiClients.Models
 @using Peritus.ApiContracts.Identity
 @using Peritus.ApiContracts.Identity.Auth
 @using Peritus.Types.Identity.Users
@@ -18,25 +19,25 @@
             <div class="alert alert-danger">@_errorMessage</div>
         }
 
-        <EditForm Model="Input" FormName="SignUp" OnSubmit="SubmitAsync" Enhance>
+        <EditForm Model="Input" FormName="SignUp" OnValidSubmit="SubmitAsync" Enhance>
             <DataAnnotationsValidator/>
             <ValidationSummary class="text-danger"/>
 
             <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username"/>
+                <InputText @bind-Value="Input!.Email" class="form-control" autocomplete="username"/>
                 <label>Email</label>
                 <ValidationMessage For="() => Input.Email" class="text-danger"/>
             </div>
 
             <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Password" type="password" class="form-control"
+                <InputText @bind-Value="Input!.Password" type="password" class="form-control"
                            autocomplete="new-password"/>
                 <label>Password</label>
                 <ValidationMessage For="() => Input.Password" class="text-danger"/>
             </div>
 
             <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.ConfirmPassword" type="password" class="form-control"
+                <InputText @bind-Value="Input!.ConfirmPassword" type="password" class="form-control"
                            autocomplete="new-password"/>
                 <label>Confirm Password</label>
                 <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger"/>
@@ -52,15 +53,20 @@
 </div>
 
 @code {
-    [SupplyParameterFromForm] public SignUpInput Input { get; set; } = null!;
+    [SupplyParameterFromForm] public SignUpInput? Input { get; set; }
 
     private string? _errorMessage;
+
+    protected override void OnInitialized()
+    {
+        Input ??= new SignUpInput();
+    }
 
     public async Task SubmitAsync()
     {
         _errorMessage = null;
 
-        if (Input.Password != Input.ConfirmPassword)
+        if (Input!.Password != Input.ConfirmPassword)
         {
             _errorMessage = "Passwords do not match.";
             return;
@@ -72,10 +78,9 @@
             Password = new Password(Input.Password!)
         });
 
-        if (!response.IsSuccessful || response.Content is null)
+        if (!response.IsSuccessful)
         {
-            var error = response.Error?.Content ?? "Registration failed.";
-            _errorMessage = error;
+            _errorMessage = ApiErrorResponse.Parse(response.Error.Content) ?? "Unknown error occurred.";
             return;
         }
 

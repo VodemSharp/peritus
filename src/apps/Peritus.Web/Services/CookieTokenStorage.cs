@@ -1,18 +1,16 @@
 using Peritus.ApiClients.Abstractions;
 using Peritus.Types.Tokens;
+using Peritus.Web.Types;
 
 namespace Peritus.Web.Services;
 
 public class CookieTokenStorage(IHttpContextAccessor httpContextAccessor) : ITokenStorage
 {
-    private const string AccessTokenCookie = "peritus_access_token";
-    private const string RefreshTokenCookie = "peritus_refresh_token";
-
     public AccessToken? AccessToken
     {
         get
         {
-            var value = httpContextAccessor.HttpContext?.Request.Cookies[AccessTokenCookie];
+            var value = httpContextAccessor.HttpContext?.Request.Cookies[CookieName.AccessToken.Value];
             return string.IsNullOrEmpty(value) ? null : new AccessToken(value);
         }
     }
@@ -21,7 +19,7 @@ public class CookieTokenStorage(IHttpContextAccessor httpContextAccessor) : ITok
     {
         get
         {
-            var value = httpContextAccessor.HttpContext?.Request.Cookies[RefreshTokenCookie];
+            var value = httpContextAccessor.HttpContext?.Request.Cookies[CookieName.RefreshToken.Value];
             return string.IsNullOrEmpty(value) ? null : new RefreshToken(value);
         }
     }
@@ -44,8 +42,8 @@ public class CookieTokenStorage(IHttpContextAccessor httpContextAccessor) : ITok
             Expires = DateTimeOffset.UtcNow.AddDays(7)
         };
 
-        context.Response.Cookies.Append(AccessTokenCookie, accessToken.Value, options);
-        context.Response.Cookies.Append(RefreshTokenCookie, refreshToken.Value, options);
+        context.Response.Cookies.Append(CookieName.AccessToken.Value, accessToken.Value, options);
+        context.Response.Cookies.Append(CookieName.RefreshToken.Value, refreshToken.Value, options);
     }
 
     public void ClearTokens()
@@ -62,7 +60,7 @@ public class CookieTokenStorage(IHttpContextAccessor httpContextAccessor) : ITok
             Expires = DateTimeOffset.UtcNow.AddDays(-1)
         };
 
-        context.Response.Cookies.Delete(AccessTokenCookie, options);
-        context.Response.Cookies.Delete(RefreshTokenCookie, options);
+        context.Response.Cookies.Delete(CookieName.AccessToken.Value, options);
+        context.Response.Cookies.Delete(CookieName.RefreshToken.Value, options);
     }
 }

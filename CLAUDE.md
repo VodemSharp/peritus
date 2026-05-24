@@ -128,6 +128,26 @@ await db.SaveChangesAsync();
     - `principal.GetUserId()` → `UserId`
     - `principal.GetAccessTokenId()` → `AccessTokenId`
 
+## Folder Organization
+
+Place types in semantically correct folders. A `record struct` holding a cookie name string is a **type**, not a
+service.
+
+```csharp
+// ❌ WRONG — CookieName is not a service
+// src/apps/Peritus.Web/Services/CookieName.cs
+
+// ✅ CORRECT
+// src/apps/Peritus.Web/Types/CookieName.cs
+```
+
+| What it is                               | Where it goes            | Examples                                                              |
+|------------------------------------------|--------------------------|-----------------------------------------------------------------------|
+| Type / value object / constant container | `Types/` or project root | `CookieName`, `HttpClientName`                                        |
+| Business logic / handler / provider      | `Services/`              | `CookieAuthenticationStateProvider`, `JwtCookieAuthenticationHandler` |
+| DI registration helpers                  | `Extensions/`            | `IdentityApiClientExtensions`                                         |
+| Interfaces                               | `Abstractions/`          | `ITokenStorage`                                                       |
+
 ## Common Pitfalls Checklist
 
 - [ ] Did I call `db.*.Update(entity)` after querying with NoTracking and before `SaveChangesAsync`?
@@ -151,6 +171,36 @@ await db.SaveChangesAsync();
   uses them.
 - [ ] Did I avoid calling another module's feature directly? Use `IMediator` and a command from that module's
   `.Messages` project instead.
+- [ ] Did I use `response.Error.Content` (not `?.`) after `!response.IsSuccessful`, and skip `response.Content is null`
+  checks? `ApiResponse<T>` has `MemberNotNullWhen` annotations — trust them.
+
+### Refit ApiResponse Null Checks
+
+Refit's `ApiResponse<T>` has `MemberNotNullWhen` annotations on `IsSuccessful`:
+
+```csharp
+// ❌ WRONG — redundant null checks
+if (!response.IsSuccessful || response.Content is null)
+{
+    _errorMessage = response.Error?.Content; // ?. is unnecessary
+    return;
+}
+
+// ✅ CORRECT — IsSuccessful tells the compiler
+if (!response.IsSuccessful)
+{
+    _errorMessage = response.Error.Content; // Error is non-null here
+    return;
+}
+
+// Content is non-null here
+var token = response.Content.AccessToken;
+```
+
+| `IsSuccessful` | `Content` | `Error`  |
+|----------------|-----------|----------|
+| `true`         | non-null  | null     |
+| `false`        | null      | non-null |
 
 ## File Locations Reference
 
