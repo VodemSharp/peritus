@@ -14,8 +14,7 @@ public class PasswordChangeFeature(
     IUserService userService,
     IPasswordHasher<User> passwordHasher,
     TimeProvider timeProvider,
-    IdentityDbContext db
-)
+    IdentityDbContext db)
 {
     public async Task<FluentResult> ExecuteAsync(Context context, CancellationToken ct)
     {

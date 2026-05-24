@@ -52,10 +52,7 @@ public class SignInRecoveryCodeFeature(
             await db.SaveChangesAsync(ct);
 
             var sessionResult = await userSessionService.CreateAsync(
-                userId,
-                context.IpAddress,
-                context.UserAgent,
-                ct: ct);
+                userId, context.IpAddress, context.UserAgent, ct: ct);
 
             await sessionValidator.SetAsync(sessionResult.AccessTokenId, sessionResult.ExpiredAt, ct);
 

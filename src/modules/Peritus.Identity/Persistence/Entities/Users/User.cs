@@ -50,7 +50,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.HasIndex(e => e.NormalizedEmail).IsUnique();
 
-
         builder.Property(x => x.PhoneNumber).HasMaxLength(20);
         builder.Property(x => x.TwoFactorSecret).HasMaxLength(64);
         builder.Property(x => x.Culture).HasMaxLength(5).IsRequired();

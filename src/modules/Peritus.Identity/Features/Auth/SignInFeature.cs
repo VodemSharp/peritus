@@ -71,10 +71,7 @@ public partial class SignInFeature(
                     return await db.ExecuteInTransactionAsync(async () =>
                     {
                         var sessionResult = await userSessionService.CreateAsync(
-                            user.Id,
-                            context.IpAddress,
-                            context.UserAgent,
-                            ct: ct);
+                            user.Id, context.IpAddress, context.UserAgent, ct: ct);
 
                         await sessionValidator.SetAsync(sessionResult.AccessTokenId, sessionResult.ExpiredAt, ct);
 

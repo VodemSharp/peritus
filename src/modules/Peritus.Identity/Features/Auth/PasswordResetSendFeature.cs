@@ -12,8 +12,7 @@ public class PasswordResetSendFeature(
     IUserService userService,
     IUserTokenService userTokenService,
     IMediator mediator,
-    IOptions<IdentityOptions> identityOptions
-)
+    IOptions<IdentityOptions> identityOptions)
 {
     private readonly IdentityOptions _options = identityOptions.Value;
 

@@ -7,8 +7,7 @@ namespace Peritus.Identity.Features.Auth;
 
 public class EmailConfirmFeature(
     IUserService userService,
-    IUserTokenService userTokenService
-)
+    IUserTokenService userTokenService)
 {
     public async Task<FluentResult> ExecuteAsync(Context context, CancellationToken ct)
     {

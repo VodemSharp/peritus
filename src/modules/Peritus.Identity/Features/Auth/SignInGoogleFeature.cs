@@ -49,10 +49,7 @@ public class SignInGoogleFeature(
                 else
                 {
                     var userId = await userService.CreateAsync(
-                        new Email(payload.Email),
-                        new Password(Guid.NewGuid().ToString()),
-                        culture: null,
-                        ct: ct);
+                        new Email(payload.Email), new Password(Guid.NewGuid().ToString()), culture: null, ct: ct);
 
                     user = await userService.GetByIdAsync(userId, ct);
                     user.EmailConfirmed = true;
@@ -72,11 +69,7 @@ public class SignInGoogleFeature(
                 externalLoginId = newExternalLogin.Id;
 
                 var sessionResult = await userSessionService.CreateAsync(
-                    user.Id,
-                    context.IpAddress,
-                    context.UserAgent,
-                    externalLoginId,
-                    ct);
+                    user.Id, context.IpAddress, context.UserAgent, externalLoginId, ct);
 
                 await sessionValidator.SetAsync(sessionResult.AccessTokenId, sessionResult.ExpiredAt, ct);
 
@@ -93,11 +86,7 @@ public class SignInGoogleFeature(
 
         // Existing external login — just create a session
         var existingSessionResult = await userSessionService.CreateAsync(
-            user.Id,
-            context.IpAddress,
-            context.UserAgent,
-            externalLoginId,
-            ct);
+            user.Id, context.IpAddress, context.UserAgent, externalLoginId, ct);
 
         await sessionValidator.SetAsync(existingSessionResult.AccessTokenId, existingSessionResult.ExpiredAt, ct);
 
