@@ -86,7 +86,9 @@ public abstract class ApiTest(InfrastructureFixture fixture) : IAsyncLifetime
         // ReSharper disable once InvertIf
         if (!response.IsSuccessful)
         {
-            var errorMessage = response.Error?.Content;
+            var errorMessage = response.HasResponseError(out var apiException)
+                ? apiException.Content
+                : response.Error?.Message;
             throw new InvalidOperationException($"Failed to create user: {errorMessage}");
         }
 
@@ -104,9 +106,11 @@ public abstract class ApiTest(InfrastructureFixture fixture) : IAsyncLifetime
             });
 
         // ReSharper disable once InvertIf
-        if (!response.IsSuccessful || response.Content is null)
+        if (!response.IsSuccessful)
         {
-            var errorMessage = response.Error?.Content;
+            var errorMessage = response.HasResponseError(out var apiException)
+                ? apiException.Content
+                : response.Error?.Message;
             throw new InvalidOperationException($"Failed to sign in: {errorMessage}");
         }
 
