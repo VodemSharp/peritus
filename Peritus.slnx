@@ -43,6 +43,6 @@
     <Project Path="tests/common/Peritus.IntegrationTests/Peritus.IntegrationTests.csproj"/>
   </Folder>
   <Folder Name="/tests/modules/">
-    <Project Path="tests\modules\Peritus.Identity.IntegrationTests\Peritus.Identity.IntegrationTests.csproj"/>
+    <Project Path="tests/modules/Peritus.Identity.IntegrationTests/Peritus.Identity.IntegrationTests.csproj"/>
   </Folder>
 </Solution>
