@@ -11,7 +11,7 @@ it is a single deployable unit split into layers:
 | Layer           | Projects                                                                                                                                                  | Responsibility                                                                                               |
 |-----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
 | Host            | `Peritus.AppHost`, `Peritus.ServiceDefaults`                                                                                                              | Aspire orchestration, Docker Compose env, container registry config                                          |
-| Apps            | `Peritus.Api`, `Peritus.Web`                                                                                                                              | Minimal API endpoints + Blazor frontend (separate deployables, same repo)                                    |
+| Apps            | `Peritus.Api`                                                                                                                                             | Minimal API endpoints                                                                                        |
 | Modules         | `Peritus.Identity`, `Peritus.Notification`                                                                                                                | Domain modules. Identity = auth/users. Notification = email/SMS                                              |
 | Module Messages | `Peritus.Messages.Notification`                                                                                                                           | Inter-module command contracts                                                                               |
 | Migrators       | `Peritus.Migrator`                                                                                                                                        | DbUp migration runner + admin seeding                                                                        |
@@ -130,21 +130,21 @@ await db.SaveChangesAsync();
 
 ## Folder Organization
 
-Place types in semantically correct folders. A `record struct` holding a cookie name string is a **type**, not a
+Place types in semantically correct folders. A `record struct` holding an HTTP client name string is a **type**, not a
 service.
 
 ```csharp
-// ❌ WRONG — CookieName is not a service
-// src/apps/Peritus.Web/Services/CookieName.cs
+// ❌ WRONG — HttpClientName is not a service
+// src/common/Peritus.Types/Services/HttpClientName.cs
 
 // ✅ CORRECT
-// src/apps/Peritus.Web/Types/CookieName.cs
+// src/common/Peritus.Types/Http/HttpClientName.cs
 ```
 
 | What it is                               | Where it goes            | Examples                                                              |
 |------------------------------------------|--------------------------|-----------------------------------------------------------------------|
-| Type / value object / constant container | `Types/` or project root | `CookieName`, `HttpClientName`                                        |
-| Business logic / handler / provider      | `Services/`              | `CookieAuthenticationStateProvider`, `JwtCookieAuthenticationHandler` |
+| Type / value object / constant container | `Types/` or project root | `HttpClientName`                                                      |
+| Business logic / handler / provider      | `Services/`              | `TokenService`, `SessionValidator`                                    |
 | DI registration helpers                  | `Extensions/`            | `IdentityApiClientExtensions`                                         |
 | Interfaces                               | `Abstractions/`          | `ITokenStorage`                                                       |
 
@@ -164,7 +164,6 @@ service.
 - [ ] Did I update the `IEntityTypeConfiguration<T>` co-located in the entity file?
 - [ ] Did I add `using Peritus.Identity.Types;` when referencing module-specific types like `UserSessionStatus`?
 - [ ] Did I validate phone numbers with E.164 format (`+1234567890`) before processing?
-- [ ] Does the auth cookie expiry match the JWT `exp` claim?
 - [ ] Did I use `using` directives (or `using` aliases for disambiguation) instead of fully qualified type names like
   `Peritus.Identity.Options.IdentityOptions`?
 - [ ] Did I avoid inline magic strings? Extract them to `const` fields or `static readonly` members on the class that
@@ -232,7 +231,6 @@ var token = response.Content.AccessToken;
 | Aspire service defaults      | `src/common/Peritus.ServiceDefaults/`                                     |
 | Module commands/events       | `src/messages/Peritus.Messages.Notification/`                             |
 | Migrator                     | `src/migrators/Peritus.Migrator/`                                         |
-| Web frontend                 | `src/apps/Peritus.Web/`                                                   |
 | API marker interface         | `src/apps/Peritus.Api/IApiMarker.cs`                                      |
 | Test fixture                 | `tests/common/Peritus.IntegrationTests/Fixtures/InfrastructureFixture.cs` |
 | Test factory                 | `tests/common/Peritus.IntegrationTests/PeritusApplicationFactory.cs`      |
