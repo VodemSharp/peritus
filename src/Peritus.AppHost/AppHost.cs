@@ -32,11 +32,6 @@ var api = builder.AddProject<Peritus_Api>("api")
     .WithReference(db)
     .WaitForCompletion(migrator);
 
-var web = builder.AddProject<Peritus_Web>("web")
-    .WithExternalHttpEndpoints()
-    .WithReference(api)
-    .WaitFor(api);
-
 if (!builder.ExecutionContext.IsRunMode)
 {
     var registryEndpoint = builder.AddParameterFromConfiguration("registry-endpoint", "REGISTRY_ENDPOINT");
@@ -50,9 +45,6 @@ if (!builder.ExecutionContext.IsRunMode)
         .WithImagePushOptions(context => context.Options.RemoteImageTag = GetVersion());
 
     api.WithContainerRegistry(registry)
-        .WithImagePushOptions(context => context.Options.RemoteImageTag = GetVersion());
-
-    web.WithContainerRegistry(registry)
         .WithImagePushOptions(context => context.Options.RemoteImageTag = GetVersion());
 }
 

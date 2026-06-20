@@ -9,7 +9,6 @@
   </Folder>
   <Folder Name="/src/apps/">
     <Project Path="src/apps/Peritus.Api/Peritus.Api.csproj"/>
-    <Project Path="src/apps/Peritus.Web/Peritus.Web.csproj"/>
   </Folder>
   <Folder Name="/src/common/">
     <Project Path="src/common/Peritus.OpenApi/Peritus.OpenApi.csproj"/>
