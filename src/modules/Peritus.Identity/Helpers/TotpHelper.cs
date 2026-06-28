@@ -30,18 +30,16 @@ public static class TotpHelper
 
     public static string[] GenerateRecoveryCodes(int count = 10)
     {
-        var codes = new string[count];
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        var bytes = new byte[8];
+        const int codeLength = 8;
 
+        var codes = new string[count];
         for (var i = 0; i < count; i++)
         {
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(bytes);
-            var code = new StringBuilder(8);
-            foreach (var b in bytes)
+            var code = new StringBuilder(codeLength);
+            for (var j = 0; j < codeLength; j++)
             {
-                code.Append(chars[b % chars.Length]);
+                code.Append(chars[RandomNumberGenerator.GetInt32(chars.Length)]);
             }
 
             codes[i] = code.ToString();

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Peritus.ApiClients.Abstractions;
-using Peritus.ApiClients.DelegatingHanlers;
+using Peritus.ApiClients.DelegatingHandlers;
 using Peritus.ApiContracts.Identity;
 using Peritus.Types.Http;
 using Refit;

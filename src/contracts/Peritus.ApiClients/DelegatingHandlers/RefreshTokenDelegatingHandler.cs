@@ -1,10 +1,11 @@
+using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Peritus.ApiClients.Abstractions;
 using Peritus.ApiContracts.Identity.Auth;
 using Peritus.Types.Http;
 
-namespace Peritus.ApiClients.DelegatingHanlers;
+namespace Peritus.ApiClients.DelegatingHandlers;
 
 public class RefreshTokenDelegatingHandler(
     ITokenStorage tokenStorage,
@@ -91,26 +92,33 @@ public class RefreshTokenDelegatingHandler(
                 RefreshToken = tokenStorage.RefreshToken!.Value
             };
 
-            var response = await client.PostAsJsonAsync(RefreshEndpoint, request, ct);
+            using var response = await client.PostAsJsonAsync(RefreshEndpoint, request, ct);
+
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                tokenStorage.ClearTokens();
+                return;
+            }
 
             if (!response.IsSuccessStatusCode)
             {
-                tokenStorage.ClearTokens();
                 return;
             }
 
             var result = await response.Content.ReadFromJsonAsync<TokenRefreshResponse>(ct);
-            if (result is null)
+            if (result is not null)
             {
-                tokenStorage.ClearTokens();
-                return;
+                tokenStorage.SetTokens(result.AccessToken, result.RefreshToken);
             }
-
-            tokenStorage.SetTokens(result.AccessToken, result.RefreshToken);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
         }
         catch
         {
-            tokenStorage.ClearTokens();
+            // Network failure, timeout, or a malformed payload - keep the current tokens and let the
+            // outgoing request proceed; refresh is retried on a later request.
         }
     }
 }

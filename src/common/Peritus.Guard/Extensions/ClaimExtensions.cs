@@ -12,14 +12,20 @@ public static class ClaimExtensions
     {
         public AccessTokenId GetAccessTokenId()
         {
-            return new AccessTokenId(
-                Guid.Parse(principal.Claims.Single(c => c.Type == JwtRegisteredClaimNames.Jti).Value)
-            );
+            return new AccessTokenId(GetRequiredClaimGuid(principal, JwtRegisteredClaimNames.Jti));
         }
 
         public UserId GetUserId()
         {
-            return new UserId(Guid.Parse(principal.Claims.Single(c => c.Type == CustomClaimTypes.UserId).Value));
+            return new UserId(GetRequiredClaimGuid(principal, CustomClaimTypes.UserId));
         }
+    }
+
+    private static Guid GetRequiredClaimGuid(ClaimsPrincipal principal, string claimType)
+    {
+        var value = principal.FindFirst(claimType)?.Value;
+        return !Guid.TryParse(value, out var guid)
+            ? throw new InvalidOperationException($"The '{claimType}' claim is missing or not a valid GUID.")
+            : guid;
     }
 }

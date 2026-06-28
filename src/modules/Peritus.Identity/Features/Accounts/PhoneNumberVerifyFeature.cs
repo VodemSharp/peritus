@@ -49,7 +49,7 @@ public class PhoneNumberVerifyFeature(
 
         if (string.IsNullOrEmpty(token.Value))
         {
-            throw new InvalidOperationException("Phone number verification token has no value.");
+            return FluentResult.InternalError("Phone number verification token has no value.");
         }
 
         user.PhoneNumber = new PhoneNumber(token.Value!);

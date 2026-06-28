@@ -63,7 +63,8 @@ public partial class SignInFeature(
         if (remainingLockout.HasValue)
         {
             return FluentResult<Response>.ValidationProblem(nameof(request.Password),
-                $"Account locked due to multiple failed attempts. Try again in {remainingLockout.Value.TotalMinutes:F0} minutes.");
+                $"Account locked due to multiple failed attempts. " +
+                $"Try again in {remainingLockout.Value.TotalMinutes:F0} minutes.");
         }
 
         var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
@@ -115,7 +116,7 @@ public partial class SignInFeature(
                 });
 
             default:
-                throw new ApplicationException("Unexpected result");
+                return FluentResult<Response>.InternalError("Unexpected sign-in result.");
         }
     }
 

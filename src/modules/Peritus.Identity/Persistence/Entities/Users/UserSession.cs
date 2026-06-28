@@ -40,7 +40,6 @@ public class UserSessionConfiguration : IEntityTypeConfiguration<UserSession>
         builder.Property(x => x.UserAgent).HasMaxLength(512);
         builder.Property(x => x.Status).HasMaxLength(16);
         builder.Property(x => x.AccessTokenId).HasMaxLength(36);
-        builder.Property(x => x.AccessTokenId).HasMaxLength(36);
         builder.Property(x => x.RefreshToken).HasMaxLength(44);
 
         builder.HasIndex(x => x.UserId);
