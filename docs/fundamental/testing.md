@@ -6,10 +6,9 @@
 
 One feature ↔ one scenario test file, named `{Feature}Tests.cs` under `Scenarios/{Domain}/`
 (see [the vertical slice](architecture.md)). Tests drive the slice through the `IIdentityApi` Refit
-client, exactly as a real consumer would. **Rare exception (manual approval):** a feature whose behaviour
-differs by a template configuration flag may split into one file per configuration —
-`{Feature}{Configuration}Tests.cs` (file name = class name) — each pinning its config via
-`GetSettings()` (see [the slice rules](architecture.md)).
+client, exactly as a real consumer would. A feature whose behaviour differs by a template configuration
+flag does **not** split into a second file — it pins the flag declaratively with `[Settings(key, value)]`
+on the class or the individual `[Fact]` (see [Configuration via `[Settings]`](#configuration-via-settings)).
 
 ## Test Architecture
 
@@ -25,7 +24,7 @@ ApiTest (IAsyncLifetime)
   ├─ Creates PeritusApplicationFactory per test method
   ├─ Injects FakeTimeProvider for deterministic time
   ├─ Provides CreateUserAsync(), SignInAsync(), CreateRestClient<T>()
-  └─ Tests override ConfigureServices() and GetSettings()
+  └─ Tests override ConfigureServices() and declare config via [Settings(key, value)]
 
 IdentityApiTest : ApiTest
   └─ Adds CreateIdentityDbContext() and CreateIdentityApi()
@@ -52,7 +51,7 @@ IdentityApiTest : ApiTest
 
 ```csharp
 public class MyTests(InfrastructureFixture fixture)
-    : IdentityApiTest(fixture), IClassFixture<InfrastructureFixture>
+    : IdentityApiTest(fixture)
 {
     private readonly CancellationToken _ct = TestContext.Current.CancellationToken;
 
@@ -69,6 +68,33 @@ public class MyTests(InfrastructureFixture fixture)
     }
 }
 ```
+
+The `InfrastructureFixture` is shared across the whole assembly via
+`[assembly: AssemblyFixture(typeof(InfrastructureFixture))]` (in `AssemblyFixtures.cs`); the class
+receives it by constructor — no `IClassFixture`.
+
+### Configuration via `[Settings]`
+
+To run a test (or a whole test class) against a non-default template configuration, apply
+`[Settings(key, value)]` — the key/value is fed to the `PeritusApplicationFactory` via `UseSetting`.
+There is no `GetSettings()` override; attributes replace it.
+
+- **Class level** — every test in the class gets the setting:
+  ```csharp
+  [Settings("IdentityOptions:MaxFailedAccessAttempts", "3")]
+  [Settings("IdentityOptions:DefaultLockoutTimeSpan", "00:05:00")]
+  public class SignInTests(InfrastructureFixture fixture) : IdentityApiTest(fixture) { ... }
+  ```
+- **Method level** — only that `[Fact]` gets the setting (use this to keep a configuration variant in the
+  same file as the feature's other tests):
+  ```csharp
+  [Fact]
+  [Settings("IdentityOptions:RequireConfirmedEmail", "true")]
+  public async Task SignUp_WhenEmailConfirmationRequired_ReturnsNoTokensAsync() { ... }
+  ```
+
+Merge order is framework defaults → class attributes → method attributes; the most specific wins. Keys are
+plain strings (config paths), so a typo silently no-ops — copy the exact `IdentityOptions:*` path.
 
 ### Test Helpers
 

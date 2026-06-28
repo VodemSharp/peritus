@@ -36,12 +36,11 @@ Concretely, the sign-up slice lives in exactly these files:
 - **One feature ↔ one test file**, named `{Feature}Tests.cs` and placed under the matching
   `Scenarios/{Domain}/` folder. The test drives the slice through `IIdentityApi`, exactly as a real
   client would.
-    - **Exception — 1 feature ↔ 1 test *configuration* (rare, requires manual approval):** when a
-      feature's behaviour genuinely differs by a deployment configuration the template exposes (e.g. an
-      `IdentityOptions` flag such as `RequireConfirmedEmail`), each configuration gets its own file
-      `{Feature}{Configuration}Tests.cs` (file name = class name), each pinning its configuration via
-      the `GetSettings()` override (e.g. `SignUpConfirmationEnabledTests.cs`). Default to a single file;
-      only split when a reviewer signs off.
+    - **Configuration variants stay in the same file.** When a feature behaves differently under a
+      template configuration flag (e.g. an `IdentityOptions` flag such as `RequireConfirmedEmail`), do
+      **not** split into a second file. Pin the config declaratively with `[Settings(key, value)]` on
+      the test class (applies to every test in it) or on a single `[Fact]` (applies to just that test).
+      See [testing.md](testing.md).
 - **The feature owns its endpoint.** There is no central endpoints folder; the route is declared by the
   feature's own static `MapEndpoint` (see [api.md](api.md)).
 - **Contract DTOs mirror the feature's nested `Request`/`Response`.** The feature defines server-side

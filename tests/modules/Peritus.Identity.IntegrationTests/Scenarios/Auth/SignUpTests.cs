@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Peritus.ApiContracts.Identity.Auth;
 using Peritus.Identity.IntegrationTests.Abstractions;
 using Peritus.IntegrationTests.Assertions;
+using Peritus.IntegrationTests.Attributes;
 using Peritus.IntegrationTests.Fixtures;
 using Peritus.IntegrationTests.Types;
 using Peritus.Types.Identity.Users;
@@ -109,5 +110,28 @@ public class SignUpTests(InfrastructureFixture fixture) : IdentityApiTest(fixtur
         // Assert
         await ApiAssert.ValidationErrorAsync(response, nameof(SignUpRequest.Email),
             "Email address is already in use.");
+    }
+
+    [Fact]
+    [Settings("IdentityOptions:RequireConfirmedEmail", "true")]
+    public async Task SignUp_WhenEmailConfirmationRequired_ReturnsNoTokensAsync()
+    {
+        // Arrange
+        var api = CreateIdentityApi();
+        var credentials = UserCredentials.Create();
+        var request = new SignUpRequest
+        {
+            Email = credentials.Email,
+            Password = credentials.Password
+        };
+
+        // Act
+        var response = await api.SignUpAsync(request, _ct);
+
+        // Assert
+        var result = ApiAssert.Success(response);
+        Assert.True(result.EmailConfirmationRequired);
+        Assert.Null(result.AccessToken);
+        Assert.Null(result.RefreshToken);
     }
 }

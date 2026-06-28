@@ -1,14 +1,17 @@
 using System.Data;
 using System.Net.Http.Headers;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using Peritus.ApiContracts.Identity;
 using Peritus.ApiContracts.Identity.Auth;
+using Peritus.IntegrationTests.Attributes;
 using Peritus.IntegrationTests.Fixtures;
 using Peritus.IntegrationTests.Types;
 using Peritus.Types.Tokens;
 using Refit;
 using Xunit;
+using Xunit.v3;
 
 namespace Peritus.IntegrationTests.Abstractions;
 
@@ -26,7 +29,7 @@ public abstract class ApiTest(InfrastructureFixture fixture) : IAsyncLifetime
                 ConfigureServicesInternal(services);
                 ConfigureServices(services);
             },
-            GetSettingsInternal().Concat(GetSettings()));
+            GetSettings().Concat(GetAttributeSettings()));
 
         return ValueTask.CompletedTask;
     }
@@ -39,11 +42,6 @@ public abstract class ApiTest(InfrastructureFixture fixture) : IAsyncLifetime
 
     protected virtual void ConfigureServices(IServiceCollection services)
     {
-    }
-
-    protected virtual Dictionary<string, string?> GetSettings()
-    {
-        return new Dictionary<string, string?>();
     }
 
     protected async Task<IDbConnection> CreateDbConnectionAsync(CancellationToken ct)
@@ -122,7 +120,22 @@ public abstract class ApiTest(InfrastructureFixture fixture) : IAsyncLifetime
         services.AddSingleton<TimeProvider>(TimeProvider);
     }
 
-    private Dictionary<string, string?> GetSettingsInternal()
+    private static IEnumerable<KeyValuePair<string, string?>> GetAttributeSettings()
+    {
+        var method = (TestContext.Current.TestMethod as IXunitTestMethod)?.Method;
+        if (method is null)
+        {
+            return [];
+        }
+
+        var classSettings = method.DeclaringType?.GetCustomAttributes<SettingsAttribute>(true) ?? [];
+        var methodSettings = method.GetCustomAttributes<SettingsAttribute>(true);
+
+        return classSettings.Concat(methodSettings)
+            .Select(attribute => new KeyValuePair<string, string?>(attribute.Key, attribute.Value));
+    }
+
+    private Dictionary<string, string?> GetSettings()
     {
         return new Dictionary<string, string?>
         {

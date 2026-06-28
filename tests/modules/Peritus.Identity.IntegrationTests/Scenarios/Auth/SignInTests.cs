@@ -4,23 +4,17 @@ using Peritus.Identity.IntegrationTests.Abstractions;
 using Peritus.Identity.IntegrationTests.Assertions;
 using Peritus.Identity.Types;
 using Peritus.IntegrationTests.Assertions;
+using Peritus.IntegrationTests.Attributes;
 using Peritus.IntegrationTests.Fixtures;
 using Peritus.Types.Identity.Users;
 
 namespace Peritus.Identity.IntegrationTests.Scenarios.Auth;
 
+[Settings("IdentityOptions:MaxFailedAccessAttempts", "3")]
+[Settings("IdentityOptions:DefaultLockoutTimeSpan", "00:05:00")]
 public class SignInTests(InfrastructureFixture fixture) : IdentityApiTest(fixture)
 {
     private readonly CancellationToken _ct = TestContext.Current.CancellationToken;
-
-    protected override Dictionary<string, string?> GetSettings()
-    {
-        return new Dictionary<string, string?>
-        {
-            ["IdentityOptions:MaxFailedAccessAttempts"] = "3",
-            ["IdentityOptions:DefaultLockoutTimeSpan"] = "00:05:00"
-        };
-    }
 
     [Fact]
     public async Task SignIn_WithValidCredentials_ReturnsTokensAsync()

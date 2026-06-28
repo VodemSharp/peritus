@@ -35,7 +35,7 @@ contract ↔ test. `Tag` is the literal `.WithTags(...)` value on the endpoint.
 | POST   | `/accounts/2fa/enable`               | TwoFactor | `TwoFactorEnableFeature`                | _(none)_ → `TwoFactorEnableResponse`                           | `Accounts/TwoFactorEnableTests`                |
 | POST   | `/accounts/2fa/confirm`              | TwoFactor | `TwoFactorVerifySetupFeature`           | `TwoFactorVerifySetupRequest` → `TwoFactorVerifySetupResponse` | `Accounts/TwoFactorVerifySetupTests`           |
 | POST   | `/accounts/2fa/disable`              | TwoFactor | `TwoFactorDisableFeature`               | _(none)_                                                       | `Accounts/TwoFactorDisableTests`               |
-| POST   | `/accounts/2fa/recovery-codes`       | TwoFactor | `TwoFactorGenerateRecoveryCodesFeature` | _(none)_ → `TwoFactorRecoveryCodesResponse`                   | `Accounts/TwoFactorGenerateRecoveryCodesTests` |
+| POST   | `/accounts/2fa/recovery-codes`       | TwoFactor | `TwoFactorGenerateRecoveryCodesFeature` | _(none)_ → `TwoFactorRecoveryCodesResponse`                    | `Accounts/TwoFactorGenerateRecoveryCodesTests` |
 | POST   | `/accounts/passwords/change`         | Passwords | `PasswordChangeFeature`                 | `PasswordChangeRequest` → _(none)_                             | `Accounts/PasswordChangeTests`                 |
 | GET    | `/accounts/sessions`                 | Sessions  | `SessionListFeature`                    | _(none)_ → `List<SessionListItemResponse>`                     | `Accounts/SessionListTests`                    |
 | POST   | `/accounts/sessions/{id}/revoke`     | Sessions  | `SessionRevokeFeature`                  | _(route param `id`)_                                           | `Accounts/SessionRevokeTests`                  |
@@ -49,6 +49,3 @@ contract ↔ test. `Tag` is the literal `.WithTags(...)` value on the endpoint.
 |--------|-------------|---------|------------------------|-----------------------------------|------------------------------|
 | GET    | `/profiles` | Profile | `ProfileGetFeature`    | _(none)_ → `ProfileGetResponse`   | `Profile/ProfileGetTests`    |
 | PUT    | `/profiles` | Profile | `ProfileUpdateFeature` | `ProfileUpdateRequest` → _(none)_ | `Profile/ProfileUpdateTests` |
-
-> **Configuration variant:** `/auth/signup` additionally carries `Auth/SignUpConfirmationEnabledTests`
-> (`RequireConfirmedEmail=true`), per the [1 feature ↔ 1 test *configuration* exception](../fundamental/architecture.md).
