@@ -1,6 +1,9 @@
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.IdentityModel.Tokens;
+using Peritus.AspNetCore.Extensions;
 using Peritus.FluentResults;
 using Peritus.Identity.Persistence;
 using Peritus.Identity.Persistence.Entities.Users;
@@ -13,19 +16,38 @@ using Peritus.Types.Tokens;
 namespace Peritus.Identity.Features.Auth;
 
 public class SignInGoogleFeature(
-    IHttpClientFactory httpClientFactory,
+    IGoogleTokenValidator googleTokenValidator,
     IUserService userService,
     IUserSessionService userSessionService,
     ISessionValidator sessionValidator,
     IdentityDbContext db)
 {
-    public async Task<FluentResult<Result>> ExecuteAsync(Context context, CancellationToken ct)
+    public static void MapEndpoint(IEndpointRouteBuilder app)
     {
-        var payload = await ValidateGoogleTokenAsync(context.IdToken, ct);
+        app.MapPost("/auth/signin/google", async (
+                Request request,
+                SignInGoogleFeature feature,
+                HttpContext httpContext,
+                CancellationToken ct) =>
+            {
+                request.IpAddress = httpContext.GetRemoteIpAddress();
+                request.UserAgent = httpContext.Request.GetUserAgent();
+
+                var result = await feature.ExecuteAsync(request, ct);
+                return result.ToResult();
+            })
+            .Produces<Response>()
+            .WithTags("Auth")
+            .WithSummary("Sign in with Google");
+    }
+
+    private async Task<FluentResult<Response>> ExecuteAsync(Request request, CancellationToken ct)
+    {
+        var payload = await googleTokenValidator.ValidateAsync(request.IdToken, ct);
 
         if (payload is null || string.IsNullOrEmpty(payload.Email) || !payload.EmailVerified)
         {
-            return FluentResult<Result>.ValidationProblem(nameof(context.IdToken),
+            return FluentResult<Response>.ValidationProblem(nameof(request.IdToken),
                 "Invalid or unverified Google token.");
         }
 
@@ -69,11 +91,11 @@ public class SignInGoogleFeature(
                 externalLoginId = newExternalLogin.Id;
 
                 var sessionResult = await userSessionService.CreateAsync(
-                    user.Id, context.IpAddress, context.UserAgent, externalLoginId, ct);
+                    user.Id, request.IpAddress, request.UserAgent, externalLoginId, ct);
 
                 await sessionValidator.SetAsync(sessionResult.AccessTokenId, sessionResult.ExpiredAt, ct);
 
-                return FluentResult<Result>.Success(new Result
+                return FluentResult<Response>.Success(new Response
                 {
                     AccessToken = sessionResult.Tokens.AccessToken,
                     RefreshToken = sessionResult.Tokens.RefreshToken
@@ -86,87 +108,27 @@ public class SignInGoogleFeature(
 
         // Existing external login — just create a session
         var existingSessionResult = await userSessionService.CreateAsync(
-            user.Id, context.IpAddress, context.UserAgent, externalLoginId, ct);
+            user.Id, request.IpAddress, request.UserAgent, externalLoginId, ct);
 
         await sessionValidator.SetAsync(existingSessionResult.AccessTokenId, existingSessionResult.ExpiredAt, ct);
 
-        return FluentResult<Result>.Success(new Result
+        return FluentResult<Response>.Success(new Response
         {
             AccessToken = existingSessionResult.Tokens.AccessToken,
             RefreshToken = existingSessionResult.Tokens.RefreshToken
         });
     }
 
-    private async Task<GoogleSignInPayload?> ValidateGoogleTokenAsync(string idToken, CancellationToken ct = default)
+    public class Request
     {
-        var handler = new JsonWebTokenHandler();
-        var token = handler.ReadJsonWebToken(idToken);
-        var kid = token.Kid;
-
-        if (string.IsNullOrEmpty(kid))
-        {
-            return null;
-        }
-
-        var httpClient = httpClientFactory.CreateClient();
-        var jwksResponse = await httpClient.GetStringAsync("https://www.googleapis.com/oauth2/v3/certs", ct);
-        var keySet = new JsonWebKeySet(jwksResponse);
-        var signingKey = keySet.GetSigningKeys().FirstOrDefault(k => k.KeyId == kid);
-
-        if (signingKey == null)
-        {
-            return null;
-        }
-
-        var validationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = "https://accounts.google.com",
-            ValidateAudience = false,
-            ValidateLifetime = true,
-            IssuerSigningKey = signingKey,
-            ClockSkew = TimeSpan.FromMinutes(5)
-        };
-
-        var result = await handler.ValidateTokenAsync(idToken, validationParameters);
-
-        if (!result.IsValid)
-        {
-            return null;
-        }
-
-        var claimsIdentity = result.ClaimsIdentity;
-
-        return new GoogleSignInPayload
-        {
-            Sub = claimsIdentity.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ?? string.Empty,
-            Email = claimsIdentity.FindFirst(JwtRegisteredClaimNames.Email)?.Value ?? string.Empty,
-            EmailVerified = bool.TryParse(claimsIdentity.FindFirst("email_verified")?.Value, out var verified) &&
-                            verified,
-            Name = claimsIdentity.FindFirst(JwtRegisteredClaimNames.Name)?.Value,
-            Picture = claimsIdentity.FindFirst(JwtRegisteredClaimNames.Picture)?.Value
-        };
+        [JsonPropertyName("idToken")] public required string IdToken { get; set; }
+        [JsonIgnore] public IpAddress? IpAddress { get; set; }
+        [JsonIgnore] public UserAgent UserAgent { get; set; }
     }
 
-    private class GoogleSignInPayload
+    public class Response
     {
-        public required string Sub { get; set; }
-        public required string Email { get; set; }
-        public required bool EmailVerified { get; set; }
-        public string? Name { get; set; }
-        public string? Picture { get; set; }
-    }
-
-    public class Context
-    {
-        public required string IdToken { get; set; }
-        public required IpAddress? IpAddress { get; set; }
-        public required UserAgent UserAgent { get; set; }
-    }
-
-    public class Result
-    {
-        public required AccessToken AccessToken { get; set; }
-        public required RefreshToken RefreshToken { get; set; }
+        [JsonPropertyName("accessToken")] public required AccessToken AccessToken { get; set; }
+        [JsonPropertyName("refreshToken")] public required RefreshToken RefreshToken { get; set; }
     }
 }

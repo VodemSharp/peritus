@@ -1,5 +1,12 @@
+using System.Security.Claims;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Peritus.AspNetCore.Extensions;
 using Peritus.FluentResults;
+using Peritus.Guard.Extensions;
 using Peritus.Identity.Helpers;
 using Peritus.Identity.Persistence;
 using Peritus.Identity.Persistence.Entities.Users;
@@ -13,13 +20,33 @@ public class TwoFactorGenerateRecoveryCodesFeature(
     IdentityDbContext db,
     IUserService userService)
 {
-    public async Task<FluentResult<Result>> ExecuteAsync(Context context, CancellationToken ct)
+    public static void MapEndpoint(IEndpointRouteBuilder endpoints)
     {
-        var user = await userService.GetByIdAsync(context.UserId, ct);
+        endpoints.MapPost("/accounts/2fa/recovery-codes", async (
+                TwoFactorGenerateRecoveryCodesFeature feature,
+                ClaimsPrincipal principal,
+                CancellationToken ct) =>
+            {
+                var request = new Request
+                {
+                    UserId = principal.GetUserId()
+                };
+
+                var result = await feature.ExecuteAsync(request, ct);
+                return result.ToResult();
+            })
+            .RequireAuthorization()
+            .Produces<Response>()
+            .WithTags("TwoFactor");
+    }
+
+    private async Task<FluentResult<Response>> ExecuteAsync(Request request, CancellationToken ct)
+    {
+        var user = await userService.GetByIdAsync(request.UserId, ct);
 
         if (!user.TwoFactorEnabled)
         {
-            return FluentResult<Result>.ValidationMessage("Two-factor authentication is not enabled.");
+            return FluentResult<Response>.ValidationMessage("Two-factor authentication is not enabled.");
         }
 
         return await db.ExecuteInTransactionAsync(async () =>
@@ -39,20 +66,20 @@ public class TwoFactorGenerateRecoveryCodesFeature(
 
             await db.SaveChangesAsync(ct);
 
-            return FluentResult<Result>.Success(new Result
+            return FluentResult<Response>.Success(new Response
             {
                 RecoveryCodes = rawCodes
             });
         }, ct);
     }
 
-    public class Context
+    public class Request
     {
-        public required UserId UserId { get; set; }
+        [JsonIgnore] public UserId UserId { get; set; }
     }
 
-    public class Result
+    public class Response
     {
-        public required string[] RecoveryCodes { get; set; }
+        [JsonPropertyName("recoveryCodes")] public required string[] RecoveryCodes { get; set; }
     }
 }

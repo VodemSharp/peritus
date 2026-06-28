@@ -8,8 +8,7 @@ using Peritus.Types.Identity.Users;
 
 namespace Peritus.Identity.IntegrationTests.Scenarios.Auth;
 
-public class SignUpTests(InfrastructureFixture fixture)
-    : IdentityApiTest(fixture), IClassFixture<InfrastructureFixture>
+public class SignUpTests(InfrastructureFixture fixture) : IdentityApiTest(fixture)
 {
     private readonly CancellationToken _ct = TestContext.Current.CancellationToken;
 
@@ -30,8 +29,9 @@ public class SignUpTests(InfrastructureFixture fixture)
 
         // Assert
         var tokens = ApiAssert.Success(response);
-        Assert.False(string.IsNullOrWhiteSpace(tokens.AccessToken));
-        Assert.False(string.IsNullOrWhiteSpace(tokens.RefreshToken));
+        Assert.False(string.IsNullOrWhiteSpace(tokens.AccessToken!.Value));
+        Assert.False(string.IsNullOrWhiteSpace(tokens.RefreshToken!.Value));
+        Assert.False(tokens.EmailConfirmationRequired);
     }
 
     [Fact]

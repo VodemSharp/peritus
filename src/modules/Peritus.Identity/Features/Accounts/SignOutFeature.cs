@@ -1,5 +1,12 @@
+using System.Security.Claims;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Peritus.AspNetCore.Extensions;
 using Peritus.FluentResults;
+using Peritus.Guard.Extensions;
 using Peritus.Identity.Persistence;
 using Peritus.Identity.Services.Abstractions;
 using Peritus.Identity.Types;
@@ -13,9 +20,30 @@ public partial class SignOutFeature(
     IUserSessionService userSessionService,
     IdentityDbContext db)
 {
-    public async Task<FluentResult> ExecuteAsync(Context context, CancellationToken ct)
+    public static void MapEndpoint(IEndpointRouteBuilder app)
     {
-        var userSession = await userSessionService.FindByAccessTokenIdAsync(context.AccessTokenId, ct);
+        app.MapPost("/accounts/signout", async (
+                SignOutFeature feature,
+                ClaimsPrincipal principal,
+                CancellationToken ct) =>
+            {
+                var request = new Request
+                {
+                    AccessTokenId = principal.GetAccessTokenId()
+                };
+
+                var result = await feature.ExecuteAsync(request, ct);
+                return result.ToResult();
+            })
+            .Produces(StatusCodes.Status200OK)
+            .RequireAuthorization()
+            .WithTags("Sessions")
+            .WithSummary("Sign out");
+    }
+
+    private async Task<FluentResult> ExecuteAsync(Request request, CancellationToken ct)
+    {
+        var userSession = await userSessionService.FindByAccessTokenIdAsync(request.AccessTokenId, ct);
 
         if (userSession != null)
         {
@@ -25,10 +53,10 @@ public partial class SignOutFeature(
         }
         else
         {
-            LogUserSessionWasNotFound(context.AccessTokenId.Value);
+            LogUserSessionWasNotFound(request.AccessTokenId.Value);
         }
 
-        await sessionValidator.RemoveAsync(context.AccessTokenId, ct);
+        await sessionValidator.RemoveAsync(request.AccessTokenId, ct);
 
         return FluentResult.Success();
     }
@@ -36,8 +64,8 @@ public partial class SignOutFeature(
     [LoggerMessage(LogLevel.Warning, "User session was not found: {AccessTokenId}")]
     private partial void LogUserSessionWasNotFound(Guid accessTokenId);
 
-    public class Context
+    public class Request
     {
-        public required AccessTokenId AccessTokenId { get; set; }
+        [JsonIgnore] public AccessTokenId AccessTokenId { get; set; }
     }
 }

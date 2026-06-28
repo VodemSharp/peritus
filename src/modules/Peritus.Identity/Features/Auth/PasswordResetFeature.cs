@@ -1,5 +1,10 @@
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Peritus.AspNetCore.Extensions;
 using Peritus.FluentResults;
 using Peritus.Identity.Persistence;
 using Peritus.Identity.Persistence.Entities.Users;
@@ -17,25 +22,40 @@ public class PasswordResetFeature(
     TimeProvider timeProvider,
     IdentityDbContext db)
 {
-    public async Task<FluentResult> ExecuteAsync(Context context, CancellationToken ct)
+    public static void MapEndpoint(IEndpointRouteBuilder app)
     {
-        var user = await userService.FindByEmailAsync(context.Email, ct);
+        app.MapPost("/auth/passwords/reset", async (
+                Request request,
+                PasswordResetFeature feature,
+                CancellationToken ct) =>
+            {
+                var result = await feature.ExecuteAsync(request, ct);
+                return result.ToResult();
+            })
+            .Produces(StatusCodes.Status200OK)
+            .WithTags("Passwords")
+            .WithSummary("Reset password");
+    }
+
+    private async Task<FluentResult> ExecuteAsync(Request request, CancellationToken ct)
+    {
+        var user = await userService.FindByEmailAsync(request.Email, ct);
 
         if (user is null)
         {
-            return FluentResult.ValidationProblem(nameof(context.Token), "Invalid or expired token.");
+            return FluentResult.ValidationProblem(nameof(request.Token), "Invalid or expired token.");
         }
 
-        var result = await userTokenService.RedeemAsync(user.Id, UserTokenType.PasswordReset, context.Token, ct);
+        var result = await userTokenService.RedeemAsync(user.Id, UserTokenType.PasswordReset, request.Token, ct);
 
         if (!result.IsSuccess)
         {
-            return FluentResult.ValidationProblem(nameof(context.Token), "Invalid or expired token.");
+            return FluentResult.ValidationProblem(nameof(request.Token), "Invalid or expired token.");
         }
 
         await db.ExecuteInTransactionAsync(async () =>
         {
-            user.PasswordHash = passwordHasher.HashPassword(user, context.NewPassword);
+            user.PasswordHash = passwordHasher.HashPassword(user, request.NewPassword);
             db.Users.Update(user);
             await db.SaveChangesAsync(ct);
 
@@ -50,10 +70,10 @@ public class PasswordResetFeature(
         return FluentResult.Success();
     }
 
-    public class Context
+    public class Request
     {
-        public required Email Email { get; set; }
-        public required string Token { get; set; }
-        public required Password NewPassword { get; set; }
+        [JsonPropertyName("email")] public required Email Email { get; set; }
+        [JsonPropertyName("token")] public required string Token { get; set; }
+        [JsonPropertyName("newPassword")] public required Password NewPassword { get; set; }
     }
 }

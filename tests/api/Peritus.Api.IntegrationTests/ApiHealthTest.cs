@@ -4,7 +4,7 @@ using Peritus.IntegrationTests.Fixtures;
 
 namespace Peritus.Api.IntegrationTests;
 
-public class ApiHealthTest(InfrastructureFixture fixture) : ApiTest(fixture), IClassFixture<InfrastructureFixture>
+public class ApiHealthTest(InfrastructureFixture fixture) : ApiTest(fixture)
 {
     private readonly CancellationToken _ct = TestContext.Current.CancellationToken;
 

@@ -1,6 +1,13 @@
+using System.Security.Claims;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Peritus.AspNetCore.Extensions;
 using Peritus.FluentResults;
+using Peritus.Guard.Extensions;
 using Peritus.Identity.Persistence;
 using Peritus.Identity.Services.Abstractions;
 using Peritus.Identity.Types;
@@ -13,15 +20,38 @@ public partial class SessionRevokeFeature(
     ISessionValidator sessionValidator,
     ILogger<SessionRevokeFeature> logger)
 {
-    public async Task<FluentResult> ExecuteAsync(Context context, CancellationToken ct)
+    public static void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapPost("/accounts/sessions/{id}/revoke", async (
+                string id,
+                SessionRevokeFeature feature,
+                ClaimsPrincipal principal,
+                CancellationToken ct) =>
+            {
+                var request = new Request
+                {
+                    UserId = principal.GetUserId(),
+                    SessionId = new UserSessionId(Guid.Parse(id))
+                };
+
+                var result = await feature.ExecuteAsync(request, ct);
+                return result.ToResult();
+            })
+            .Produces(StatusCodes.Status200OK)
+            .RequireAuthorization()
+            .WithTags("Sessions")
+            .WithSummary("Revoke session");
+    }
+
+    private async Task<FluentResult> ExecuteAsync(Request request, CancellationToken ct)
     {
         var session = await db.UserSessions
-            .Where(x => x.Id == context.SessionId && x.UserId == context.UserId)
+            .Where(x => x.Id == request.SessionId && x.UserId == request.UserId)
             .SingleOrDefaultAsync(ct);
 
         if (session is null)
         {
-            LogSessionNotFound(context.UserId.Value, context.SessionId.Value);
+            LogSessionNotFound(request.UserId.Value, request.SessionId.Value);
             return FluentResult.NotFound("Session not found.");
         }
 
@@ -38,9 +68,9 @@ public partial class SessionRevokeFeature(
     [LoggerMessage(LogLevel.Warning, "Session not found for user {UserId}: {SessionId}")]
     private partial void LogSessionNotFound(Guid userId, Guid sessionId);
 
-    public class Context
+    public class Request
     {
-        public required UserId UserId { get; set; }
-        public required UserSessionId SessionId { get; set; }
+        [JsonIgnore] public UserId UserId { get; set; }
+        [JsonIgnore] public UserSessionId SessionId { get; set; }
     }
 }

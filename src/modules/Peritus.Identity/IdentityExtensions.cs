@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +24,7 @@ public static class IdentityExtensions
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IUserTokenService, UserTokenService>();
         builder.Services.AddScoped<ISessionValidator, SessionValidator>();
+        builder.Services.AddScoped<IGoogleTokenValidator, GoogleTokenValidator>();
 
         // Features - Auth
         builder.Services.AddScoped<SignInFeature>();
@@ -59,6 +61,40 @@ public static class IdentityExtensions
         builder.AddIdentityDbContext();
 
         return builder;
+    }
+
+    public static IEndpointRouteBuilder MapIdentityEndpoints(this IEndpointRouteBuilder app)
+    {
+        // Auth
+        SignUpFeature.MapEndpoint(app);
+        SignInFeature.MapEndpoint(app);
+        SignInTwoFactorFeature.MapEndpoint(app);
+        SignInRecoveryCodeFeature.MapEndpoint(app);
+        SignInGoogleFeature.MapEndpoint(app);
+        SignOutFeature.MapEndpoint(app);
+        TokenRefreshFeature.MapEndpoint(app);
+        EmailSendConfirmationFeature.MapEndpoint(app);
+        EmailConfirmFeature.MapEndpoint(app);
+        PasswordResetSendFeature.MapEndpoint(app);
+        PasswordResetFeature.MapEndpoint(app);
+
+        // Accounts
+        PasswordChangeFeature.MapEndpoint(app);
+        SessionListFeature.MapEndpoint(app);
+        SessionRevokeFeature.MapEndpoint(app);
+        SessionRevokeAllFeature.MapEndpoint(app);
+        TwoFactorEnableFeature.MapEndpoint(app);
+        TwoFactorVerifySetupFeature.MapEndpoint(app);
+        TwoFactorDisableFeature.MapEndpoint(app);
+        TwoFactorGenerateRecoveryCodesFeature.MapEndpoint(app);
+        PhoneNumberSendVerificationFeature.MapEndpoint(app);
+        PhoneNumberVerifyFeature.MapEndpoint(app);
+
+        // Profile
+        ProfileGetFeature.MapEndpoint(app);
+        ProfileUpdateFeature.MapEndpoint(app);
+
+        return app;
     }
 
     public static IHostApplicationBuilder AddIdentityDbContext(this IHostApplicationBuilder builder)

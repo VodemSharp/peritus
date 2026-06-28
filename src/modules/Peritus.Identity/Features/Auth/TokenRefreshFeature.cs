@@ -1,4 +1,9 @@
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Peritus.AspNetCore.Extensions;
 using Peritus.FluentResults;
 using Peritus.Guard.Extensions;
 using Peritus.Identity.Persistence;
@@ -15,12 +20,31 @@ public class TokenRefreshFeature(
     ISessionValidator sessionValidator,
     TimeProvider timeProvider)
 {
-    public async Task<FluentResult<Result>> ExecuteAsync(Context context, CancellationToken ct)
+    public static void MapEndpoint(IEndpointRouteBuilder app)
     {
-        var tokenResult = await tokenService.GetPrincipalFromExpiredTokenAsync(context.AccessToken);
+        app.MapPost("/auth/refresh", async (
+                Request request,
+                TokenRefreshFeature feature,
+                HttpContext httpContext,
+                CancellationToken ct) =>
+            {
+                request.IpAddress = httpContext.GetRemoteIpAddress();
+                request.UserAgent = httpContext.Request.GetUserAgent();
+
+                var result = await feature.ExecuteAsync(request, ct);
+                return result.ToResult();
+            })
+            .Produces<Response>()
+            .WithTags("Auth")
+            .WithSummary("Refresh token");
+    }
+
+    private async Task<FluentResult<Response>> ExecuteAsync(Request request, CancellationToken ct)
+    {
+        var tokenResult = await tokenService.GetPrincipalFromExpiredTokenAsync(request.AccessToken);
         if (!tokenResult.IsSuccess)
         {
-            return FluentResult<Result>.ValidationProblem(nameof(context.AccessToken), "Invalid access token.");
+            return FluentResult<Response>.ValidationProblem(nameof(request.AccessToken), "Invalid access token.");
         }
 
         var principal = tokenResult.Result;
@@ -31,22 +55,22 @@ public class TokenRefreshFeature(
             .Include(x => x.User)
             .ThenInclude(x => x!.UserRoles)!
             .ThenInclude(userRoles => userRoles.Role!)
-            .SingleOrDefaultAsync(t => t.UserId == userId && t.RefreshToken == context.RefreshToken, ct);
+            .SingleOrDefaultAsync(t => t.UserId == userId && t.RefreshToken == request.RefreshToken, ct);
 
         if (userSession == null)
         {
-            return FluentResult<Result>.ValidationProblem(nameof(context.RefreshToken), "Refresh token not found.");
+            return FluentResult<Response>.ValidationProblem(nameof(request.RefreshToken), "Refresh token not found.");
         }
 
         if (userSession.Status == UserSessionStatus.Terminated)
         {
-            return FluentResult<Result>.ValidationProblem(nameof(context.RefreshToken),
+            return FluentResult<Response>.ValidationProblem(nameof(request.RefreshToken),
                 "User session has been terminated.");
         }
 
         if (userSession.ExpiredAt < timeProvider.GetUtcNow().UtcDateTime)
         {
-            return FluentResult<Result>.ValidationProblem(nameof(context.RefreshToken),
+            return FluentResult<Response>.ValidationProblem(nameof(request.RefreshToken),
                 "User session has been expired.");
         }
 
@@ -55,8 +79,8 @@ public class TokenRefreshFeature(
 
         userSession.AccessTokenId = newAccessTokenId;
         userSession.RefreshToken = newAuthTokens.RefreshToken;
-        userSession.IpAddress = context.IpAddress;
-        userSession.UserAgent = context.UserAgent;
+        userSession.IpAddress = request.IpAddress;
+        userSession.UserAgent = request.UserAgent;
 
         db.UserSessions.Update(userSession);
         await db.SaveChangesAsync(ct);
@@ -65,8 +89,8 @@ public class TokenRefreshFeature(
         await sessionValidator.RemoveAsync(accessTokenId, ct);
         await sessionValidator.SetAsync(newAccessTokenId, userSession.ExpiredAt, ct);
 
-        return FluentResult<Result>.Success(
-            new Result
+        return FluentResult<Response>.Success(
+            new Response
             {
                 AccessToken = newAuthTokens.AccessToken,
                 RefreshToken = newAuthTokens.RefreshToken
@@ -74,17 +98,17 @@ public class TokenRefreshFeature(
         );
     }
 
-    public class Context
+    public class Request
     {
-        public required AccessToken AccessToken { get; set; }
-        public required RefreshToken RefreshToken { get; set; }
-        public required IpAddress? IpAddress { get; set; }
-        public required UserAgent UserAgent { get; set; }
+        [JsonPropertyName("accessToken")] public required AccessToken AccessToken { get; set; }
+        [JsonPropertyName("refreshToken")] public required RefreshToken RefreshToken { get; set; }
+        [JsonIgnore] public IpAddress? IpAddress { get; set; }
+        [JsonIgnore] public UserAgent UserAgent { get; set; }
     }
 
-    public class Result
+    public class Response
     {
-        public required AccessToken AccessToken { get; set; }
-        public required RefreshToken RefreshToken { get; set; }
+        [JsonPropertyName("accessToken")] public required AccessToken AccessToken { get; set; }
+        [JsonPropertyName("refreshToken")] public required RefreshToken RefreshToken { get; set; }
     }
 }

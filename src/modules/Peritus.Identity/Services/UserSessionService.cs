@@ -24,7 +24,7 @@ public class UserSessionService(
         var accessTokenId = AccessTokenId.Create();
         var authTokens = await tokenService.GenerateTokensAsync(userId, accessTokenId, ct);
         var utcNow = timeProvider.GetUtcNow().UtcDateTime;
-        var expiredAt = utcNow.AddSeconds(_options.RefreshTokenExpirySeconds);
+        var expiredAt = utcNow.Add(_options.RefreshTokenExpiry);
 
         await db.UserSessions.AddAsync(
             new UserSession

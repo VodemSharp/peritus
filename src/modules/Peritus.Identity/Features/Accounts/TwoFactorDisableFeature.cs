@@ -1,5 +1,12 @@
+using System.Security.Claims;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Peritus.AspNetCore.Extensions;
 using Peritus.FluentResults;
+using Peritus.Guard.Extensions;
 using Peritus.Identity.Persistence;
 using Peritus.Identity.Services.Abstractions;
 using Peritus.Persistence.Extensions;
@@ -9,9 +16,29 @@ namespace Peritus.Identity.Features.Accounts;
 
 public class TwoFactorDisableFeature(IdentityDbContext db, IUserService userService)
 {
-    public async Task<FluentResult> ExecuteAsync(Context context, CancellationToken ct)
+    public static void MapEndpoint(IEndpointRouteBuilder endpoints)
     {
-        var user = await userService.GetByIdAsync(context.UserId, ct);
+        endpoints.MapPost("/accounts/2fa/disable", async (
+                TwoFactorDisableFeature feature,
+                ClaimsPrincipal principal,
+                CancellationToken ct) =>
+            {
+                var request = new Request
+                {
+                    UserId = principal.GetUserId()
+                };
+
+                var result = await feature.ExecuteAsync(request, ct);
+                return result.ToResult();
+            })
+            .RequireAuthorization()
+            .Produces(StatusCodes.Status200OK)
+            .WithTags("TwoFactor");
+    }
+
+    private async Task<FluentResult> ExecuteAsync(Request request, CancellationToken ct)
+    {
+        var user = await userService.GetByIdAsync(request.UserId, ct);
         user.TwoFactorEnabled = false;
         user.TwoFactorSecret = null;
 
@@ -28,8 +55,8 @@ public class TwoFactorDisableFeature(IdentityDbContext db, IUserService userServ
         return FluentResult.Success();
     }
 
-    public class Context
+    public class Request
     {
-        public required UserId UserId { get; set; }
+        [JsonIgnore] public UserId UserId { get; set; }
     }
 }

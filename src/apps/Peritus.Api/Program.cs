@@ -1,6 +1,3 @@
-using Peritus.Api.Endpoints;
-using Peritus.Api.Endpoints.Accounts;
-using Peritus.Api.Endpoints.Auth;
 using Peritus.Api.Extensions.Setup;
 using Peritus.Identity;
 using Peritus.Messaging;
@@ -38,21 +35,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapDefaultEndpoints();
-
-// Auth
-SignInEndpoints.Map(app);
-SignUpEndpoints.Map(app);
-SignOutEndpoints.Map(app);
-RefreshTokenEndpoints.Map(app);
-PasswordResetEndpoints.Map(app);
-EmailConfirmationEndpoints.Map(app);
-
-// Accounts
-ChangePasswordEndpoints.Map(app);
-SessionEndpoints.Map(app);
-TwoFactorEndpoints.Map(app);
-PhoneNumberVerificationEndpoints.Map(app);
-
-ProfileEndpoints.Map(app);
+app.MapIdentityEndpoints();
 
 app.Run();

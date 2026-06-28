@@ -85,7 +85,7 @@ public class RefreshTokenDelegatingHandler(
         {
             var client = httpClientFactory.CreateClient(refreshClientName.Value);
 
-            var request = new RefreshTokenRequest
+            var request = new TokenRefreshRequest
             {
                 AccessToken = tokenStorage.AccessToken!.Value,
                 RefreshToken = tokenStorage.RefreshToken!.Value
@@ -99,7 +99,7 @@ public class RefreshTokenDelegatingHandler(
                 return;
             }
 
-            var result = await response.Content.ReadFromJsonAsync<RefreshTokenResponse>(ct);
+            var result = await response.Content.ReadFromJsonAsync<TokenRefreshResponse>(ct);
             if (result is null)
             {
                 tokenStorage.ClearTokens();

@@ -1,4 +1,9 @@
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
+using Peritus.AspNetCore.Extensions;
 using Peritus.FluentResults;
 using Peritus.Identity.Services.Abstractions;
 using Peritus.Identity.Types;
@@ -16,9 +21,24 @@ public class PasswordResetSendFeature(
 {
     private readonly IdentityOptions _options = identityOptions.Value;
 
-    public async Task<FluentResult> ExecuteAsync(Context context, CancellationToken ct)
+    public static void MapEndpoint(IEndpointRouteBuilder app)
     {
-        var user = await userService.FindByEmailAsync(context.Email, ct);
+        app.MapPost("/auth/passwords/forgot", async (
+                Request request,
+                PasswordResetSendFeature feature,
+                CancellationToken ct) =>
+            {
+                var result = await feature.ExecuteAsync(request, ct);
+                return result.ToResult();
+            })
+            .Produces(StatusCodes.Status200OK)
+            .WithTags("Passwords")
+            .WithSummary("Send password reset");
+    }
+
+    private async Task<FluentResult> ExecuteAsync(Request request, CancellationToken ct)
+    {
+        var user = await userService.FindByEmailAsync(request.Email, ct);
 
         if (user is null)
         {
@@ -37,8 +57,8 @@ public class PasswordResetSendFeature(
         return FluentResult.Success();
     }
 
-    public class Context
+    public class Request
     {
-        public required Email Email { get; set; }
+        [JsonPropertyName("email")] public required Email Email { get; set; }
     }
 }

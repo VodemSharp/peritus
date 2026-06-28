@@ -1,8 +1,21 @@
 <Solution>
   <Folder Name="/config/">
     <File Path=".editorconfig"/>
-    <File Path="CLAUDE.md"/>
     <File Path="Directory.Packages.props"/>
+  </Folder>
+  <Folder Name="/docs/">
+    <File Path="CLAUDE.md"/>
+  </Folder>
+  <Folder Name="/docs/fundamental/">
+    <File Path="docs\fundamental\api.md"/>
+    <File Path="docs\fundamental\architecture.md"/>
+    <File Path="docs\fundamental\patterns.md"/>
+    <File Path="docs\fundamental\persistence.md"/>
+    <File Path="docs\fundamental\refit.md"/>
+    <File Path="docs\fundamental\testing.md"/>
+  </Folder>
+  <Folder Name="/docs/reference/">
+    <File Path="docs\reference\endpoints.md"/>
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Peritus.AppHost/Peritus.AppHost.csproj"/>
@@ -11,6 +24,7 @@
     <Project Path="src/apps/Peritus.Api/Peritus.Api.csproj"/>
   </Folder>
   <Folder Name="/src/common/">
+    <Project Path="src/common/Peritus.AspNetCore/Peritus.AspNetCore.csproj"/>
     <Project Path="src/common/Peritus.OpenApi/Peritus.OpenApi.csproj"/>
     <Project Path="src/common/Peritus.Persistence/Peritus.Persistence.csproj"/>
     <Project Path="src/common/Peritus.Guard/Peritus.Guard.csproj"/>

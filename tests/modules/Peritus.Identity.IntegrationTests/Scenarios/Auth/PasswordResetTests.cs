@@ -7,27 +7,9 @@ using Peritus.Types.Identity.Users;
 
 namespace Peritus.Identity.IntegrationTests.Scenarios.Auth;
 
-public class PasswordResetTests(InfrastructureFixture fixture)
-    : IdentityApiTest(fixture), IClassFixture<InfrastructureFixture>
+public class PasswordResetTests(InfrastructureFixture fixture) : IdentityApiTest(fixture)
 {
     private readonly CancellationToken _ct = TestContext.Current.CancellationToken;
-
-    [Fact]
-    public async Task SendPasswordReset_CreatesTokenAsync()
-    {
-        // Arrange
-        var api = CreateIdentityApi();
-        var credentials = await CreateUserAsync(_ct);
-
-        // Act
-        await api.SendPasswordResetAsync(new SendPasswordResetRequest
-        {
-            Email = credentials.Email
-        }, _ct);
-
-        // Assert
-        Assert.NotNull(TokenCapture.Get(UserTokenType.PasswordReset));
-    }
 
     [Fact]
     public async Task ResetPassword_WithValidToken_ChangesPasswordAsync()
@@ -36,7 +18,7 @@ public class PasswordResetTests(InfrastructureFixture fixture)
         var api = CreateIdentityApi();
         var credentials = await CreateUserAsync(_ct);
 
-        await api.SendPasswordResetAsync(new SendPasswordResetRequest
+        await api.SendPasswordResetAsync(new PasswordResetSendRequest
         {
             Email = credentials.Email
         }, _ct);
@@ -47,7 +29,7 @@ public class PasswordResetTests(InfrastructureFixture fixture)
         var newPassword = new Password("NewPassword123!");
 
         // Act
-        var response = await api.ResetPasswordAsync(new ResetPasswordRequest
+        var response = await api.ResetPasswordAsync(new PasswordResetRequest
         {
             Email = credentials.Email,
             Token = rawToken,
@@ -74,7 +56,7 @@ public class PasswordResetTests(InfrastructureFixture fixture)
         var credentials = await CreateUserAsync(_ct);
 
         // Act
-        var response = await api.ResetPasswordAsync(new ResetPasswordRequest
+        var response = await api.ResetPasswordAsync(new PasswordResetRequest
         {
             Email = credentials.Email,
             Token = "invalid-token",
@@ -92,7 +74,7 @@ public class PasswordResetTests(InfrastructureFixture fixture)
         var api = CreateIdentityApi();
         var credentials = await CreateUserAsync(_ct);
 
-        await api.SendPasswordResetAsync(new SendPasswordResetRequest
+        await api.SendPasswordResetAsync(new PasswordResetSendRequest
         {
             Email = credentials.Email
         }, _ct);
@@ -100,7 +82,7 @@ public class PasswordResetTests(InfrastructureFixture fixture)
         var rawToken = TokenCapture.Get(UserTokenType.PasswordReset)!;
         Assert.NotNull(rawToken);
 
-        await api.ResetPasswordAsync(new ResetPasswordRequest
+        await api.ResetPasswordAsync(new PasswordResetRequest
         {
             Email = credentials.Email,
             Token = rawToken,

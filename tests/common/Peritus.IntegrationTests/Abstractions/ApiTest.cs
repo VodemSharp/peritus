@@ -87,7 +87,7 @@ public abstract class ApiTest(InfrastructureFixture fixture) : IAsyncLifetime
         if (!response.IsSuccessful)
         {
             var errorMessage = response.HasResponseError(out var apiException)
-                ? apiException.Content
+                ? apiException?.Content
                 : response.Error?.Message;
             throw new InvalidOperationException($"Failed to create user: {errorMessage}");
         }
@@ -106,10 +106,10 @@ public abstract class ApiTest(InfrastructureFixture fixture) : IAsyncLifetime
             });
 
         // ReSharper disable once InvertIf
-        if (!response.IsSuccessful)
+        if (!response.IsSuccessfulWithContent)
         {
             var errorMessage = response.HasResponseError(out var apiException)
-                ? apiException.Content
+                ? apiException?.Content
                 : response.Error?.Message;
             throw new InvalidOperationException($"Failed to sign in: {errorMessage}");
         }
@@ -133,10 +133,13 @@ public abstract class ApiTest(InfrastructureFixture fixture) : IAsyncLifetime
                 "ConnectionStrings:cache", fixture.CacheConnectionString
             },
             {
-                "IdentityOptions:AccessTokenExpirySeconds", "3600"
+                "IdentityOptions:AccessTokenExpiry", "01:00:00"
             },
             {
-                "IdentityOptions:RefreshTokenExpirySeconds", "86400"
+                "IdentityOptions:RefreshTokenExpiry", "1.00:00:00"
+            },
+            {
+                "IdentityOptions:JwtKey", "need-to-be-changed-0000000000000"
             }
         };
     }

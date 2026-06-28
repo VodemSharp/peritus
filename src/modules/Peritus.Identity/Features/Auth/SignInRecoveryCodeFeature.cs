@@ -1,4 +1,9 @@
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Peritus.AspNetCore.Extensions;
 using Peritus.FluentResults;
 using Peritus.Identity.Helpers;
 using Peritus.Identity.Persistence;
@@ -17,12 +22,32 @@ public class SignInRecoveryCodeFeature(
     IdentityDbContext db,
     TimeProvider timeProvider)
 {
-    public async Task<FluentResult<Result>> ExecuteAsync(Context context, CancellationToken ct)
+    public static void MapEndpoint(IEndpointRouteBuilder app)
     {
-        var tokenResult = await tokenService.ValidateTwoFactorTokenAsync(context.TwoFactorToken, ct);
+        app.MapPost("/auth/use-recovery-code", async (
+                Request request,
+                SignInRecoveryCodeFeature feature,
+                HttpContext httpContext,
+                CancellationToken ct) =>
+            {
+                request.IpAddress = httpContext.GetRemoteIpAddress();
+                request.UserAgent = httpContext.Request.GetUserAgent();
+
+                var result = await feature.ExecuteAsync(request, ct);
+                return result.ToResult();
+            })
+            .Produces<Response>()
+            .WithTags("Auth")
+            .WithSummary("Sign in with recovery code");
+    }
+
+    private async Task<FluentResult<Response>> ExecuteAsync(Request request, CancellationToken ct)
+    {
+        var tokenResult = await tokenService.ValidateTwoFactorTokenAsync(request.TwoFactorToken, ct);
         if (!tokenResult.IsSuccess)
         {
-            return FluentResult<Result>.ValidationProblem(nameof(context.TwoFactorToken), "Invalid two-factor token.");
+            return FluentResult<Response>.ValidationProblem(nameof(request.TwoFactorToken),
+                "Invalid two-factor token.");
         }
 
         var userId = tokenResult.Result;
@@ -30,11 +55,11 @@ public class SignInRecoveryCodeFeature(
 
         if (!user.TwoFactorEnabled || string.IsNullOrEmpty(user.TwoFactorSecret))
         {
-            return FluentResult<Result>.ValidationProblem(nameof(context.Code),
+            return FluentResult<Response>.ValidationProblem(nameof(request.Code),
                 "Two-factor authentication is not enabled.");
         }
 
-        var codeHash = TokenHasher.HashToken(context.Code);
+        var codeHash = TokenHasher.HashToken(request.Code);
 
         var recoveryCode = await db.UserRecoveryCodes
             .Where(r => r.UserId == userId && r.CodeHash == codeHash && r.RedeemedAt == null)
@@ -42,7 +67,7 @@ public class SignInRecoveryCodeFeature(
 
         if (recoveryCode is null)
         {
-            return FluentResult<Result>.ValidationProblem(nameof(context.Code), "Invalid code.");
+            return FluentResult<Response>.ValidationProblem(nameof(request.Code), "Invalid code.");
         }
 
         return await db.ExecuteInTransactionAsync(async () =>
@@ -52,11 +77,11 @@ public class SignInRecoveryCodeFeature(
             await db.SaveChangesAsync(ct);
 
             var sessionResult = await userSessionService.CreateAsync(
-                userId, context.IpAddress, context.UserAgent, ct: ct);
+                userId, request.IpAddress, request.UserAgent, ct: ct);
 
             await sessionValidator.SetAsync(sessionResult.AccessTokenId, sessionResult.ExpiredAt, ct);
 
-            return FluentResult<Result>.Success(new Result
+            return FluentResult<Response>.Success(new Response
             {
                 AccessToken = sessionResult.Tokens.AccessToken,
                 RefreshToken = sessionResult.Tokens.RefreshToken
@@ -64,17 +89,17 @@ public class SignInRecoveryCodeFeature(
         }, ct);
     }
 
-    public class Context
+    public class Request
     {
-        public required string TwoFactorToken { get; set; }
-        public required string Code { get; set; }
-        public required IpAddress? IpAddress { get; set; }
-        public required UserAgent UserAgent { get; set; }
+        [JsonPropertyName("twoFactorToken")] public required string TwoFactorToken { get; set; }
+        [JsonPropertyName("code")] public required string Code { get; set; }
+        [JsonIgnore] public IpAddress? IpAddress { get; set; }
+        [JsonIgnore] public UserAgent UserAgent { get; set; }
     }
 
-    public class Result
+    public class Response
     {
-        public required AccessToken AccessToken { get; set; }
-        public required RefreshToken RefreshToken { get; set; }
+        [JsonPropertyName("accessToken")] public required AccessToken AccessToken { get; set; }
+        [JsonPropertyName("refreshToken")] public required RefreshToken RefreshToken { get; set; }
     }
 }

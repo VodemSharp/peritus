@@ -1,6 +1,11 @@
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Peritus.AspNetCore.Extensions;
 using Peritus.Cache.Distributed;
 using Peritus.FluentResults;
 using Peritus.Identity.Persistence;
@@ -26,27 +31,46 @@ public partial class SignInFeature(
 {
     private readonly IdentityOptions _options = identityOptions.Value;
 
-    public async Task<FluentResult<Result>> ExecuteAsync(Context context, CancellationToken ct)
+    public static void MapEndpoint(IEndpointRouteBuilder app)
     {
-        var user = await userService.FindByEmailAsync(context.Email, ct);
+        app.MapPost("/auth/signin", async (
+                Request request,
+                SignInFeature feature,
+                HttpContext httpContext,
+                CancellationToken ct) =>
+            {
+                request.IpAddress = httpContext.GetRemoteIpAddress();
+                request.UserAgent = httpContext.Request.GetUserAgent();
+
+                var result = await feature.ExecuteAsync(request, ct);
+                return result.ToResult();
+            })
+            .Produces<Response>()
+            .WithTags("Auth")
+            .WithSummary("Sign in");
+    }
+
+    private async Task<FluentResult<Response>> ExecuteAsync(Request request, CancellationToken ct)
+    {
+        var user = await userService.FindByEmailAsync(request.Email, ct);
 
         if (user is null)
         {
-            return FluentResult<Result>.ValidationProblem(nameof(context.Password), "Invalid credentials.");
+            return FluentResult<Response>.ValidationProblem(nameof(request.Password), "Invalid credentials.");
         }
 
         var remainingLockout = await GetRemainingLockoutAsync(user, ct);
         if (remainingLockout.HasValue)
         {
-            return FluentResult<Result>.ValidationProblem(nameof(context.Password),
+            return FluentResult<Response>.ValidationProblem(nameof(request.Password),
                 $"Account locked due to multiple failed attempts. Try again in {remainingLockout.Value.TotalMinutes:F0} minutes.");
         }
 
-        var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, context.Password);
+        var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
 
         if (result == PasswordVerificationResult.SuccessRehashNeeded)
         {
-            user.PasswordHash = passwordHasher.HashPassword(user, context.Password);
+            user.PasswordHash = passwordHasher.HashPassword(user, request.Password);
             await userService.UpdateAsync(user, ct);
         }
 
@@ -54,7 +78,7 @@ public partial class SignInFeature(
         {
             case PasswordVerificationResult.Failed:
                 await RecordAccessFailedAsync(user, ct);
-                return FluentResult<Result>.ValidationProblem(nameof(context.Password), "Invalid credentials.");
+                return FluentResult<Response>.ValidationProblem(nameof(request.Password), "Invalid credentials.");
 
             case PasswordVerificationResult.SuccessRehashNeeded:
             case PasswordVerificationResult.Success:
@@ -62,7 +86,7 @@ public partial class SignInFeature(
 
                 if (_options.RequireConfirmedEmail && !user.EmailConfirmed)
                 {
-                    return FluentResult<Result>.ValidationProblem(nameof(context.Email),
+                    return FluentResult<Response>.ValidationProblem(nameof(request.Email),
                         "Email not confirmed. Please check your inbox.");
                 }
 
@@ -71,11 +95,11 @@ public partial class SignInFeature(
                     return await db.ExecuteInTransactionAsync(async () =>
                     {
                         var sessionResult = await userSessionService.CreateAsync(
-                            user.Id, context.IpAddress, context.UserAgent, ct: ct);
+                            user.Id, request.IpAddress, request.UserAgent, ct: ct);
 
                         await sessionValidator.SetAsync(sessionResult.AccessTokenId, sessionResult.ExpiredAt, ct);
 
-                        return FluentResult<Result>.Success(new Result
+                        return FluentResult<Response>.Success(new Response
                         {
                             AccessToken = sessionResult.Tokens.AccessToken,
                             RefreshToken = sessionResult.Tokens.RefreshToken
@@ -84,7 +108,7 @@ public partial class SignInFeature(
                 }
 
                 var twoFactorToken = await tokenService.GenerateTwoFactorTokenAsync(user.Id, ct);
-                return FluentResult<Result>.Success(new Result
+                return FluentResult<Response>.Success(new Response
                 {
                     RequiresTwoFactor = true,
                     TwoFactorToken = twoFactorToken
@@ -170,19 +194,22 @@ public partial class SignInFeature(
     [LoggerMessage(LogLevel.Warning, "User {UserId} locked out until {LockoutEnd} after {Count} failed attempts")]
     private partial void LogUserLockedOut(UserId userId, DateTimeOffset lockoutEnd, int count);
 
-    public class Context
+    public class Request
     {
-        public required Email Email { get; set; }
-        public required Password Password { get; set; }
-        public required IpAddress? IpAddress { get; set; }
-        public required UserAgent UserAgent { get; set; }
+        [JsonPropertyName("email")] public required Email Email { get; set; }
+        [JsonPropertyName("password")] public required Password Password { get; set; }
+        [JsonIgnore] public IpAddress? IpAddress { get; set; }
+        [JsonIgnore] public UserAgent UserAgent { get; set; }
     }
 
-    public class Result
+    public class Response
     {
-        public AccessToken? AccessToken { get; set; }
-        public RefreshToken? RefreshToken { get; set; }
+        [JsonPropertyName("accessToken")] public AccessToken? AccessToken { get; set; }
+        [JsonPropertyName("refreshToken")] public RefreshToken? RefreshToken { get; set; }
+
+        [JsonPropertyName("requiresTwoFactor")]
         public bool RequiresTwoFactor { get; set; }
-        public string? TwoFactorToken { get; set; }
+
+        [JsonPropertyName("twoFactorToken")] public string? TwoFactorToken { get; set; }
     }
 }

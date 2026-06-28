@@ -1,6 +1,13 @@
+using System.Security.Claims;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Peritus.AspNetCore.Extensions;
 using Peritus.FluentResults;
+using Peritus.Guard.Extensions;
 using Peritus.Identity.Persistence;
 using Peritus.Identity.Persistence.Entities.Users;
 using Peritus.Identity.Services.Abstractions;
@@ -16,20 +23,39 @@ public class PasswordChangeFeature(
     TimeProvider timeProvider,
     IdentityDbContext db)
 {
-    public async Task<FluentResult> ExecuteAsync(Context context, CancellationToken ct)
+    public static void MapEndpoint(IEndpointRouteBuilder app)
     {
-        var user = await userService.GetByIdAsync(context.UserId, ct);
+        app.MapPost("/accounts/passwords/change", async (
+                Request request,
+                PasswordChangeFeature feature,
+                ClaimsPrincipal principal,
+                CancellationToken ct) =>
+            {
+                request.UserId = principal.GetUserId();
 
-        var verifyResult = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, context.CurrentPassword);
+                var result = await feature.ExecuteAsync(request, ct);
+                return result.ToResult();
+            })
+            .Produces(StatusCodes.Status200OK)
+            .RequireAuthorization()
+            .WithTags("Passwords")
+            .WithSummary("Change password");
+    }
+
+    private async Task<FluentResult> ExecuteAsync(Request request, CancellationToken ct)
+    {
+        var user = await userService.GetByIdAsync(request.UserId, ct);
+
+        var verifyResult = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.CurrentPassword);
 
         if (verifyResult == PasswordVerificationResult.Failed)
         {
-            return FluentResult.ValidationProblem(nameof(context.CurrentPassword), "Current password is incorrect.");
+            return FluentResult.ValidationProblem(nameof(request.CurrentPassword), "Current password is incorrect.");
         }
 
         await db.ExecuteInTransactionAsync(async () =>
         {
-            user.PasswordHash = passwordHasher.HashPassword(user, context.NewPassword);
+            user.PasswordHash = passwordHasher.HashPassword(user, request.NewPassword);
             db.Users.Update(user);
             await db.SaveChangesAsync(ct);
 
@@ -44,10 +70,10 @@ public class PasswordChangeFeature(
         return FluentResult.Success();
     }
 
-    public class Context
+    public class Request
     {
-        public required UserId UserId { get; set; }
-        public required string CurrentPassword { get; set; }
-        public required string NewPassword { get; set; }
+        [JsonIgnore] public UserId UserId { get; set; }
+        [JsonPropertyName("currentPassword")] public required string CurrentPassword { get; set; }
+        [JsonPropertyName("newPassword")] public required string NewPassword { get; set; }
     }
 }

@@ -21,6 +21,7 @@ public static class NotificationExtensions
                 Subject = command.Subject,
                 Body = command.Body
             });
+
             return Task.CompletedTask;
         });
 
@@ -31,6 +32,7 @@ public static class NotificationExtensions
                 To = command.To,
                 Message = command.Message
             });
+
             return Task.CompletedTask;
         });
 

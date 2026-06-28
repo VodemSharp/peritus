@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\common\Peritus.AspNetCore\Peritus.AspNetCore.csproj"/>
     <ProjectReference Include="..\..\common\Peritus.Cache\Peritus.Cache.csproj"/>
     <ProjectReference Include="..\..\common\Peritus.Guard\Peritus.Guard.csproj"/>
     <ProjectReference Include="..\..\common\Peritus.Messaging\Peritus.Messaging.csproj"/>

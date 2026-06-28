@@ -1,3 +1,8 @@
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Peritus.AspNetCore.Extensions;
 using Peritus.FluentResults;
 using Peritus.Identity.Services.Abstractions;
 using Peritus.Identity.Types;
@@ -9,20 +14,35 @@ public class EmailConfirmFeature(
     IUserService userService,
     IUserTokenService userTokenService)
 {
-    public async Task<FluentResult> ExecuteAsync(Context context, CancellationToken ct)
+    public static void MapEndpoint(IEndpointRouteBuilder app)
     {
-        var user = await userService.FindByEmailAsync(context.Email, ct);
+        app.MapPost("/auth/emails/confirm", async (
+                Request request,
+                EmailConfirmFeature feature,
+                CancellationToken ct) =>
+            {
+                var result = await feature.ExecuteAsync(request, ct);
+                return result.ToResult();
+            })
+            .Produces(StatusCodes.Status200OK)
+            .WithTags("Emails")
+            .WithSummary("Confirm email");
+    }
+
+    private async Task<FluentResult> ExecuteAsync(Request request, CancellationToken ct)
+    {
+        var user = await userService.FindByEmailAsync(request.Email, ct);
 
         if (user is null)
         {
-            return FluentResult.ValidationProblem(nameof(context.Token), "Invalid or expired token.");
+            return FluentResult.ValidationProblem(nameof(request.Token), "Invalid or expired token.");
         }
 
-        var result = await userTokenService.RedeemAsync(user.Id, UserTokenType.EmailConfirmation, context.Token, ct);
+        var result = await userTokenService.RedeemAsync(user.Id, UserTokenType.EmailConfirmation, request.Token, ct);
 
         if (!result.IsSuccess)
         {
-            return FluentResult.ValidationProblem(nameof(context.Token), "Invalid or expired token.");
+            return FluentResult.ValidationProblem(nameof(request.Token), "Invalid or expired token.");
         }
 
         user.EmailConfirmed = true;
@@ -31,9 +51,9 @@ public class EmailConfirmFeature(
         return FluentResult.Success();
     }
 
-    public class Context
+    public class Request
     {
-        public required Email Email { get; set; }
-        public required string Token { get; set; }
+        [JsonPropertyName("email")] public required Email Email { get; set; }
+        [JsonPropertyName("token")] public required string Token { get; set; }
     }
 }

@@ -1,4 +1,11 @@
+using System.Security.Claims;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Peritus.AspNetCore.Extensions;
 using Peritus.FluentResults;
+using Peritus.Guard.Extensions;
 using Peritus.Identity.Services.Abstractions;
 using Peritus.Types.Identity.Users;
 using Peritus.Types.Localization;
@@ -7,13 +14,31 @@ namespace Peritus.Identity.Features.Profile;
 
 public class ProfileUpdateFeature(IUserService userService)
 {
-    public async Task<FluentResult> ExecuteAsync(Context context, CancellationToken ct)
+    public static void MapEndpoint(IEndpointRouteBuilder endpoints)
     {
-        var user = await userService.GetByIdAsync(context.UserId, ct);
+        endpoints.MapPut("/profiles", async (
+                Request request,
+                ProfileUpdateFeature feature,
+                ClaimsPrincipal principal,
+                CancellationToken ct) =>
+            {
+                request.UserId = principal.GetUserId();
 
-        if (context.Culture is not null)
+                var result = await feature.ExecuteAsync(request, ct);
+                return result.ToResult();
+            })
+            .RequireAuthorization()
+            .Produces(StatusCodes.Status200OK)
+            .WithTags("Profile");
+    }
+
+    private async Task<FluentResult> ExecuteAsync(Request request, CancellationToken ct)
+    {
+        var user = await userService.GetByIdAsync(request.UserId, ct);
+
+        if (request.Culture is not null)
         {
-            user.Culture = context.Culture.Value.Code;
+            user.Culture = new CultureCode(request.Culture);
         }
 
         await userService.UpdateAsync(user, ct);
@@ -21,9 +46,9 @@ public class ProfileUpdateFeature(IUserService userService)
         return FluentResult.Success();
     }
 
-    public class Context
+    public class Request
     {
-        public required UserId UserId { get; set; }
-        public Culture? Culture { get; set; }
+        [JsonIgnore] public UserId UserId { get; set; }
+        [JsonPropertyName("culture")] public string? Culture { get; set; }
     }
 }

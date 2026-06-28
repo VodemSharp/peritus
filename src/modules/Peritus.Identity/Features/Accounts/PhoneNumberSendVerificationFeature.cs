@@ -1,5 +1,12 @@
+using System.Security.Claims;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
+using Peritus.AspNetCore.Extensions;
 using Peritus.FluentResults;
+using Peritus.Guard.Extensions;
 using Peritus.Identity.Services.Abstractions;
 using Peritus.Identity.Types;
 using Peritus.Messages.Notification;
@@ -16,16 +23,34 @@ public class PhoneNumberSendVerificationFeature(
 {
     private readonly IdentityOptions _options = identityOptions.Value;
 
-    public async Task<FluentResult> ExecuteAsync(Context context, CancellationToken ct)
+    public static void MapEndpoint(IEndpointRouteBuilder endpoints)
     {
-        var user = await userService.GetByIdAsync(context.UserId, ct);
+        endpoints.MapPost("/accounts/phones/send-verification", async (
+                Request request,
+                PhoneNumberSendVerificationFeature feature,
+                ClaimsPrincipal principal,
+                CancellationToken ct) =>
+            {
+                request.UserId = principal.GetUserId();
 
-        if (!PhoneNumber.IsValid(context.PhoneNumber))
+                var result = await feature.ExecuteAsync(request, ct);
+                return result.ToResult();
+            })
+            .RequireAuthorization()
+            .Produces(StatusCodes.Status200OK)
+            .WithTags("Phones");
+    }
+
+    private async Task<FluentResult> ExecuteAsync(Request request, CancellationToken ct)
+    {
+        var user = await userService.GetByIdAsync(request.UserId, ct);
+
+        if (!PhoneNumber.IsValid(request.PhoneNumber))
         {
-            return FluentResult.ValidationProblem(nameof(context.PhoneNumber), "Invalid phone number format.");
+            return FluentResult.ValidationProblem(nameof(request.PhoneNumber), "Invalid phone number format.");
         }
 
-        if (user.PhoneNumber == context.PhoneNumber && user.PhoneNumberConfirmed)
+        if (user.PhoneNumber == request.PhoneNumber && user.PhoneNumberConfirmed)
         {
             return FluentResult.Success();
         }
@@ -34,19 +59,19 @@ public class PhoneNumberSendVerificationFeature(
             user.Id,
             UserTokenType.PhoneNumberVerification,
             _options.PhoneNumberVerificationTokenExpiry,
-            context.PhoneNumber,
+            request.PhoneNumber,
             ct);
 
         await mediator.SendAsync(new SendSmsCommand(
-            context.PhoneNumber,
+            request.PhoneNumber,
             $"Your verification code is: {tokenResult.RawToken}"), ct);
 
         return FluentResult.Success();
     }
 
-    public class Context
+    public class Request
     {
-        public required UserId UserId { get; set; }
-        public required PhoneNumber PhoneNumber { get; set; }
+        [JsonIgnore] public UserId UserId { get; set; }
+        [JsonPropertyName("phoneNumber")] public required PhoneNumber PhoneNumber { get; set; }
     }
 }

@@ -44,9 +44,17 @@
       "type": "generated",
       "generator": "guid",
       "parameters": {
-        "format": "D"
+        "defaultFormat": "D"
       },
       "replaces": "44d33a27-fb9e-4197-b81b-9493411945a1"
+    },
+    "jwtKey": {
+      "type": "generated",
+      "generator": "guid",
+      "parameters": {
+        "defaultFormat": "N"
+      },
+      "replaces": "<jwt_key>"
     }
   },
   "postActions": [
