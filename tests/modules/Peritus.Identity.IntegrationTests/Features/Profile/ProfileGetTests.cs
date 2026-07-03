@@ -6,7 +6,7 @@ using Peritus.IntegrationTests.Assertions;
 using Peritus.IntegrationTests.Fixtures;
 using Peritus.Types.Tokens;
 
-namespace Peritus.Identity.IntegrationTests.Scenarios.Profile;
+namespace Peritus.Identity.IntegrationTests.Features.Profile;
 
 public class ProfileGetTests(InfrastructureFixture fixture) : IdentityApiTest(fixture)
 {

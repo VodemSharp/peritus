@@ -3,7 +3,7 @@ using Peritus.Identity.IntegrationTests.Abstractions;
 using Peritus.Identity.Types;
 using Peritus.IntegrationTests.Fixtures;
 
-namespace Peritus.Identity.IntegrationTests.Scenarios.Accounts;
+namespace Peritus.Identity.IntegrationTests.Features.Accounts;
 
 public class SessionRevokeAllTests(InfrastructureFixture fixture) : IdentityApiTest(fixture)
 {

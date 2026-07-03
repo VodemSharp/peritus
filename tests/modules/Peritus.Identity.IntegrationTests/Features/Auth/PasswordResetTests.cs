@@ -5,7 +5,7 @@ using Peritus.IntegrationTests.Assertions;
 using Peritus.IntegrationTests.Fixtures;
 using Peritus.Types.Identity.Users;
 
-namespace Peritus.Identity.IntegrationTests.Scenarios.Auth;
+namespace Peritus.Identity.IntegrationTests.Features.Auth;
 
 public class PasswordResetTests(InfrastructureFixture fixture) : IdentityApiTest(fixture)
 {

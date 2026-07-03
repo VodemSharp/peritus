@@ -52,7 +52,7 @@ public partial class SessionRevokeFeature(
         if (session is null)
         {
             LogSessionNotFound(request.UserId.Value, request.SessionId.Value);
-            return FluentResult.NotFound("Session not found.");
+            return FluentResult.NotFound(IdentityErrorCodes.SessionNotFound);
         }
 
         session.Status = UserSessionStatus.Terminated;

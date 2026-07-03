@@ -52,8 +52,9 @@ public class SignUpFeature(
 
         if (userExists)
         {
-            return FluentResult<Response>.ValidationProblem(nameof(request.Email),
-                "Email address is already in use.");
+            return FluentResult<Response>.ValidationProblem(
+                nameof(request.Email),
+                IdentityErrorCodes.EmailAlreadyInUse);
         }
 
         return await db.ExecuteInTransactionAsync(async () =>

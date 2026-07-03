@@ -35,14 +35,18 @@ public class EmailConfirmFeature(
 
         if (user is null)
         {
-            return FluentResult.ValidationProblem(nameof(request.Token), "Invalid or expired token.");
+            return FluentResult.ValidationProblem(
+                nameof(request.Token),
+                IdentityErrorCodes.InvalidEmailToken);
         }
 
         var result = await userTokenService.RedeemAsync(user.Id, UserTokenType.EmailConfirmation, request.Token, ct);
 
         if (!result.IsSuccess)
         {
-            return FluentResult.ValidationProblem(nameof(request.Token), "Invalid or expired token.");
+            return FluentResult.ValidationProblem(
+                nameof(request.Token),
+                IdentityErrorCodes.InvalidEmailToken);
         }
 
         user.EmailConfirmed = true;

@@ -27,14 +27,14 @@ Concretely, the sign-up slice lives in exactly these files:
 | Refit method            | `src/contracts/Peritus.ApiContracts.Identity/IIdentityApi.cs` → `SignUpAsync`              |
 | Feature (logic + route) | `src/modules/Peritus.Identity/Features/Auth/SignUpFeature.cs`                              |
 | DI + route registration | `src/modules/Peritus.Identity/IdentityExtensions.cs`                                       |
-| Test                    | `tests/modules/Peritus.Identity.IntegrationTests/Scenarios/Auth/SignUpTests.cs`            |
+| Test                    | `tests/modules/Peritus.Identity.IntegrationTests/Features/Auth/SignUpTests.cs`             |
 
 **Rules of the slice:**
 
 - **One feature = one class = one operation = one `ExecuteAsync`.** Do not add a second operation to an
   existing feature.
 - **One feature ↔ one test file**, named `{Feature}Tests.cs` and placed under the matching
-  `Scenarios/{Domain}/` folder. The test drives the slice through `IIdentityApi`, exactly as a real
+  `Features/{Domain}/` folder. The test drives the slice through `IIdentityApi`, exactly as a real
   client would.
     - **Configuration variants stay in the same file.** When a feature behaves differently under a
       template configuration flag (e.g. an `IdentityOptions` flag such as `RequireConfirmedEmail`), do
@@ -68,8 +68,8 @@ Touch these files, in order, to add one new operation (worked example: "update u
    `builder.Services.AddScoped<UserPreferencesUpdateFeature>();`
 5. **Route registration** — in `IdentityExtensions.MapIdentityEndpoints`:
    `UserPreferencesUpdateFeature.MapEndpoint(app);`
-6. **Test scenario** —
-   `tests/modules/Peritus.Identity.IntegrationTests/Scenarios/Accounts/UserPreferencesUpdateTests.cs`,
+6. **Test** —
+   `tests/modules/Peritus.Identity.IntegrationTests/Features/Accounts/UserPreferencesUpdateTests.cs`,
    covering the success path and each validation failure. Reuse the shared flow helpers
    (see [testing.md](testing.md)).
 

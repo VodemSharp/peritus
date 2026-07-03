@@ -1,24 +1,25 @@
+using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Peritus.ApiContracts.Identity.Auth;
 using Peritus.Identity.IntegrationTests.Abstractions;
 using Peritus.Identity.Types;
+using Peritus.IntegrationTests.Assertions;
 using Peritus.IntegrationTests.Fixtures;
 using Peritus.IntegrationTests.Types;
 
-namespace Peritus.Identity.IntegrationTests.Scenarios.Auth;
+namespace Peritus.Identity.IntegrationTests.Features.Auth;
 
-public class EmailSendConfirmationTests(InfrastructureFixture fixture) : IdentityApiTest(fixture)
+public class EmailConfirmTests(InfrastructureFixture fixture) : IdentityApiTest(fixture)
 {
     private readonly CancellationToken _ct = TestContext.Current.CancellationToken;
 
     [Fact]
-    public async Task SignUp_SendsEmailConfirmationTokenAsync()
+    public async Task ConfirmEmail_WithValidToken_ConfirmsEmailAsync()
     {
         // Arrange
         var api = CreateIdentityApi();
         var credentials = UserCredentials.Create();
 
-        // Act
         await api.SignUpAsync(new SignUpRequest
         {
             Email = credentials.Email,
@@ -30,19 +31,29 @@ public class EmailSendConfirmationTests(InfrastructureFixture fixture) : Identit
             Email = credentials.Email
         }, _ct);
 
+        var rawToken = TokenCapture.Get(UserTokenType.EmailConfirmation)!;
+        Assert.NotNull(rawToken);
+
+        // Act
+        var response = await api.ConfirmEmailAsync(new EmailConfirmRequest
+        {
+            Email = credentials.Email,
+            Token = rawToken
+        }, _ct);
+
         // Assert
-        Assert.NotNull(TokenCapture.Get(UserTokenType.EmailConfirmation));
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         await using var db = CreateIdentityDbContext();
         var user = await db.Users
             .Where(u => u.Email == credentials.Email)
             .SingleAsync(_ct);
 
-        Assert.False(user.EmailConfirmed);
+        Assert.True(user.EmailConfirmed);
     }
 
     [Fact]
-    public async Task ResendEmailConfirmation_GeneratesDifferentTokenAsync()
+    public async Task ConfirmEmail_WithInvalidToken_FailsAsync()
     {
         // Arrange
         var api = CreateIdentityApi();
@@ -54,22 +65,14 @@ public class EmailSendConfirmationTests(InfrastructureFixture fixture) : Identit
             Password = credentials.Password
         }, _ct);
 
-        await api.SendEmailConfirmationAsync(new EmailSendConfirmationRequest
-        {
-            Email = credentials.Email
-        }, _ct);
-
-        var firstToken = TokenCapture.Get(UserTokenType.EmailConfirmation)!;
-
         // Act
-        await api.SendEmailConfirmationAsync(new EmailSendConfirmationRequest
+        var response = await api.ConfirmEmailAsync(new EmailConfirmRequest
         {
-            Email = credentials.Email
+            Email = credentials.Email,
+            Token = "invalid-token"
         }, _ct);
-
-        var secondToken = TokenCapture.Get(UserTokenType.EmailConfirmation)!;
 
         // Assert
-        Assert.NotEqual(firstToken, secondToken);
+        await ApiAssert.ValidationErrorAsync(response, "Token", "Invalid or expired token.");
     }
 }

@@ -4,7 +4,7 @@ using Peritus.Identity.IntegrationTests.Abstractions;
 using Peritus.IntegrationTests.Assertions;
 using Peritus.IntegrationTests.Fixtures;
 
-namespace Peritus.Identity.IntegrationTests.Scenarios.Profile;
+namespace Peritus.Identity.IntegrationTests.Features.Profile;
 
 public class ProfileUpdateTests(InfrastructureFixture fixture) : IdentityApiTest(fixture)
 {

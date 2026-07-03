@@ -5,7 +5,7 @@ using Peritus.Identity.IntegrationTests.Helpers;
 using Peritus.IntegrationTests.Assertions;
 using Peritus.IntegrationTests.Fixtures;
 
-namespace Peritus.Identity.IntegrationTests.Scenarios.Accounts;
+namespace Peritus.Identity.IntegrationTests.Features.Accounts;
 
 public class TwoFactorVerifySetupTests(InfrastructureFixture fixture) : IdentityApiTest(fixture)
 {

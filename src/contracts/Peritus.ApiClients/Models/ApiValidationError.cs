@@ -2,10 +2,10 @@ using System.Text.Json.Serialization;
 
 namespace Peritus.ApiClients.Models;
 
-public sealed class ApiErrorResponse
+public sealed class ApiValidationError
 {
+    [JsonPropertyName("field")] public string? Field { get; set; }
     [JsonPropertyName("code")] public string? Code { get; set; }
-    [JsonPropertyName("detail")] public string? Detail { get; set; }
-    [JsonPropertyName("errors")] public List<ApiValidationError>? Errors { get; set; }
+    [JsonPropertyName("message")] public string? Message { get; set; }
     [JsonPropertyName("args")] public IReadOnlyList<string>? Args { get; set; }
 }

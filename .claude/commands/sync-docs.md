@@ -34,7 +34,7 @@ Focus area (optional): `$ARGUMENTS`. If empty, do the full sync below.
      `IdentityExtensions.MapIdentityEndpoints()`. Flag any feature with a `MapEndpoint` that is not
      registered, or registered but missing.
    - **Test file:** the matching `{Feature}Tests.cs` under
-     `tests/modules/Peritus.Identity.IntegrationTests/Scenarios/{Domain}/`. Flag any feature with no
+     `tests/modules/Peritus.Identity.IntegrationTests/Features/{Domain}/`. Flag any feature with no
      test file (the 1↔1 slice rule is broken).
    - Group rows by tag/domain (Auth, Accounts, Profile), update the per-group and total counts. If —
      and **only if** — you find drift (an endpoint with no `.WithTags`, or a route whose

@@ -11,6 +11,7 @@ using Peritus.Identity.Helpers;
 using Peritus.Identity.Persistence;
 using Peritus.Identity.Persistence.Entities.Users;
 using Peritus.Identity.Services.Abstractions;
+using Peritus.Identity.Types;
 using Peritus.Persistence.Extensions;
 using Peritus.Types.Identity.Users;
 
@@ -46,7 +47,7 @@ public class TwoFactorGenerateRecoveryCodesFeature(
 
         if (!user.TwoFactorEnabled)
         {
-            return FluentResult<Response>.ValidationMessage("Two-factor authentication is not enabled.");
+            return FluentResult<Response>.ValidationMessage(IdentityErrorCodes.TwoFactorNotEnabled);
         }
 
         return await db.ExecuteInTransactionAsync(async () =>

@@ -27,6 +27,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\apps\Peritus.Api\Peritus.Api.csproj"/>
     <ProjectReference Include="..\..\..\src\Peritus.AppHost\Peritus.AppHost.csproj"/>
+    <ProjectReference Include="..\..\..\src\contracts\Peritus.ApiClients\Peritus.ApiClients.csproj"/>
   </ItemGroup>
 
 </Project>

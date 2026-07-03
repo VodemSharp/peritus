@@ -50,7 +50,9 @@ public class PasswordChangeFeature(
 
         if (verifyResult == PasswordVerificationResult.Failed)
         {
-            return FluentResult.ValidationProblem(nameof(request.CurrentPassword), "Current password is incorrect.");
+            return FluentResult.ValidationProblem(
+                nameof(request.CurrentPassword),
+                IdentityErrorCodes.CurrentPasswordIncorrect);
         }
 
         await db.ExecuteInTransactionAsync(async () =>

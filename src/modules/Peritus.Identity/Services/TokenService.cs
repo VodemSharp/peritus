@@ -9,6 +9,7 @@ using Peritus.FluentResults;
 using Peritus.Guard.Claims;
 using Peritus.Identity.Persistence;
 using Peritus.Identity.Services.Abstractions;
+using Peritus.Identity.Types;
 using Peritus.Types.Identity.Users;
 using Peritus.Types.Tokens;
 
@@ -42,12 +43,12 @@ public class TokenService(
 
         if (!result.IsValid)
         {
-            return FluentResult<ClaimsPrincipal>.ValidationMessage("Invalid token");
+            return FluentResult<ClaimsPrincipal>.ValidationMessage(IdentityErrorCodes.InvalidAccessToken);
         }
 
         var jsonToken = tokenHandler.ReadJsonWebToken(token);
         return !jsonToken.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase)
-            ? FluentResult<ClaimsPrincipal>.ValidationMessage("Invalid token")
+            ? FluentResult<ClaimsPrincipal>.ValidationMessage(IdentityErrorCodes.InvalidAccessToken)
             : FluentResult<ClaimsPrincipal>.Success(new ClaimsPrincipal(result.ClaimsIdentity));
     }
 
@@ -95,7 +96,7 @@ public class TokenService(
 
         if (string.IsNullOrEmpty(userIdValue) || !Guid.TryParse(userIdValue, out var userIdGuid))
         {
-            return FluentResult<UserId>.ValidationMessage("Invalid two-factor token.");
+            return FluentResult<UserId>.ValidationMessage(IdentityErrorCodes.InvalidTwoFactorToken);
         }
 
         return FluentResult<UserId>.Success(new UserId(userIdGuid));

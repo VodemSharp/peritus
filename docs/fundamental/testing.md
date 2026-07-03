@@ -4,7 +4,7 @@
 
 **Related:** [Architecture](architecture.md) · [Refit Client](refit.md) · [API Layer](api.md) · [Patterns](patterns.md)
 
-One feature ↔ one scenario test file, named `{Feature}Tests.cs` under `Scenarios/{Domain}/`
+One feature ↔ one test file, named `{Feature}Tests.cs` under `Features/{Domain}/`
 (see [the vertical slice](architecture.md)). Tests drive the slice through the `IIdentityApi` Refit
 client, exactly as a real consumer would. A feature whose behaviour differs by a template configuration
 flag does **not** split into a second file — it pins the flag declaratively with `[Settings(key, value)]`
@@ -124,7 +124,19 @@ Reuse the shared flow helpers (`IdentityApiTest`) instead of re-deriving setup i
 null-narrowing for you (see [refit.md](refit.md)):
 
 - `ApiAssert.Success(response)` — asserts success and **returns the non-null `Content`** (synchronous).
-- `ApiAssert.ValidationErrorAsync(response, nameof(Req.Field), "msg")` — for
-  `FluentResult.ValidationProblem` (`ValidationProblemDetails.Errors[field]`).
-- `ApiAssert.ValidationMessageAsync(response, "msg")` — for `FluentResult.ValidationMessage` (plain
+- `ApiAssert.ValidationErrorAsync(response, nameof(Req.Field), "msg")` — for `FluentResult.ValidationProblem`;
+  locates the entry in the `errors[]` array by `field` and asserts its `message`.
+- `ApiAssert.ValidationErrorAsync(response, nameof(Req.Field), expectedCode, "msg")` — same, but also asserts the
+  per-field `code`.
+- `ApiAssert.ValidationErrorAsync(response, nameof(Req.Field), errorCode)` — preferred: pass the `ErrorCode` catalog
+  entry (e.g. `IdentityErrorCodes.InvalidCredentials`) and it asserts both `code` and `message` from one symbol.
+- `ApiAssert.ValidationMessageAsync(response, "msg")` — for `FluentResult.ValidationMessage` (top-level
   `ProblemDetails.Detail`).
+- `ApiAssert.ValidationMessageAsync(response, expectedCode, "msg")` — same, but also asserts the top-level `code`.
+- `ApiAssert.ValidationMessageAsync(response, errorCode)` — preferred: asserts top-level `code` + `detail` from the
+  `ErrorCode` entry.
+- `ApiAssert.InternalErrorAsync(response, expectedCode)` / `ApiAssert.InternalErrorAsync(response, errorCode)` — asserts
+  a 500 ProblemDetails carrying the top-level `code` (string or `ErrorCode` overload).
+
+All overloads come in `IApiResponse` and `IApiResponse<T>` variants and read the new
+`{ code, detail, errors:[{field, code, message}] }` shape (see [patterns.md → Error Codes](patterns.md#error-codes)).

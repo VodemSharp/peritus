@@ -7,7 +7,7 @@ using Peritus.IntegrationTests.Fixtures;
 using Peritus.IntegrationTests.Types;
 using Peritus.Types.Identity.Users;
 
-namespace Peritus.Identity.IntegrationTests.Scenarios.Auth;
+namespace Peritus.Identity.IntegrationTests.Features.Auth;
 
 public class SignUpTests(InfrastructureFixture fixture) : IdentityApiTest(fixture)
 {

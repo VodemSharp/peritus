@@ -44,7 +44,9 @@ public class TokenRefreshFeature(
         var tokenResult = await tokenService.GetPrincipalFromExpiredTokenAsync(request.AccessToken);
         if (!tokenResult.IsSuccess)
         {
-            return FluentResult<Response>.ValidationProblem(nameof(request.AccessToken), "Invalid access token.");
+            return FluentResult<Response>.ValidationProblem(
+                nameof(request.AccessToken),
+                IdentityErrorCodes.InvalidAccessToken);
         }
 
         var principal = tokenResult.Result;
@@ -59,19 +61,23 @@ public class TokenRefreshFeature(
 
         if (userSession == null)
         {
-            return FluentResult<Response>.ValidationProblem(nameof(request.RefreshToken), "Refresh token not found.");
+            return FluentResult<Response>.ValidationProblem(
+                nameof(request.RefreshToken),
+                IdentityErrorCodes.RefreshTokenNotFound);
         }
 
         if (userSession.Status == UserSessionStatus.Terminated)
         {
-            return FluentResult<Response>.ValidationProblem(nameof(request.RefreshToken),
-                "User session has been terminated.");
+            return FluentResult<Response>.ValidationProblem(
+                nameof(request.RefreshToken),
+                IdentityErrorCodes.SessionTerminated);
         }
 
         if (userSession.ExpiredAt < timeProvider.GetUtcNow().UtcDateTime)
         {
-            return FluentResult<Response>.ValidationProblem(nameof(request.RefreshToken),
-                "User session has been expired.");
+            return FluentResult<Response>.ValidationProblem(
+                nameof(request.RefreshToken),
+                IdentityErrorCodes.SessionExpired);
         }
 
         var newAccessTokenId = AccessTokenId.Create();

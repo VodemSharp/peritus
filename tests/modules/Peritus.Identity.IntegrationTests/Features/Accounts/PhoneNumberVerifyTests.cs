@@ -6,7 +6,7 @@ using Peritus.Identity.Types;
 using Peritus.IntegrationTests.Assertions;
 using Peritus.IntegrationTests.Fixtures;
 
-namespace Peritus.Identity.IntegrationTests.Scenarios.Accounts;
+namespace Peritus.Identity.IntegrationTests.Features.Accounts;
 
 public class PhoneNumberVerifyTests(InfrastructureFixture fixture) : IdentityApiTest(fixture)
 {

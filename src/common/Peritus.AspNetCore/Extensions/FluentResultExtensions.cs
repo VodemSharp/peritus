@@ -1,5 +1,6 @@
 using System.Net;
 using Microsoft.AspNetCore.Http;
+using Peritus.AspNetCore.HttpResults;
 using Peritus.FluentResults;
 
 namespace Peritus.AspNetCore.Extensions;
@@ -23,14 +24,40 @@ public static class FluentResultExtensions
     {
         return error switch
         {
-            FluentNotFoundResult notFound => Results.NotFound(notFound.Detail),
-            FluentValidationProblemResult validationProblem
-                => Results.ValidationProblem(validationProblem.Errors),
-            FluentValidationMessageResult validationMessage
-                => Results.Problem(validationMessage.Message, statusCode: StatusCodes.Status400BadRequest),
-            FluentInternalErrorResult internalError => Results.InternalServerError(internalError.Detail),
+            FluentValidationProblemResult validationProblem => Results.Problem(
+                title: "One or more validation errors occurred.",
+                statusCode: StatusCodes.Status400BadRequest,
+                extensions: new Dictionary<string, object?>
+                {
+                    ["code"] = validationProblem.Code,
+                    ["errors"] = validationProblem.Errors
+                }),
+            FluentValidationMessageResult validationMessage => Results.Problem(
+                validationMessage.Message,
+                statusCode: StatusCodes.Status400BadRequest,
+                extensions: BuildExtensions(validationMessage.Code, validationMessage.Args)),
+            FluentNotFoundResult notFound => Results.Problem(
+                notFound.Detail,
+                statusCode: StatusCodes.Status404NotFound,
+                extensions: BuildExtensions(notFound.Code, notFound.Args)),
+            FluentInternalErrorResult internalError => new InternalErrorHttpResult(internalError),
             _ => throw new ArgumentException($"Not supported error type: {error.GetType().Name}")
         };
+    }
+
+    private static Dictionary<string, object?> BuildExtensions(string code, IReadOnlyList<string>? args)
+    {
+        var extensions = new Dictionary<string, object?>
+        {
+            ["code"] = code
+        };
+
+        if (args is not null)
+        {
+            extensions["args"] = args;
+        }
+
+        return extensions;
     }
 
     private static IResult GetSuccessResult<T>(T value, HttpStatusCode statusCode)

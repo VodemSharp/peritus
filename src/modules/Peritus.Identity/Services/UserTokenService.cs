@@ -61,18 +61,58 @@ public class UserTokenService(
         var info = await cache.GetAsync<UserTokenInfo>(key, ct);
         if (info is null)
         {
-            return FluentResult<UserTokenInfo>.ValidationMessage("Invalid or expired token.");
+            return FluentResult<UserTokenInfo>.ValidationMessage(GetInvalidTokenError(type));
         }
 
         var utcNow = timeProvider.GetUtcNow().UtcDateTime;
         if (info.ExpiresAt < utcNow)
         {
             await cache.RemoveAsync(key, ct);
-            return FluentResult<UserTokenInfo>.ValidationMessage("Token has expired.");
+            return FluentResult<UserTokenInfo>.ValidationMessage(GetExpiredTokenError(type));
         }
 
         await cache.RemoveAsync(key, ct);
 
         return FluentResult<UserTokenInfo>.Success(info);
+    }
+
+    private static ErrorCode GetInvalidTokenError(UserTokenType type)
+    {
+        if (type == UserTokenType.EmailConfirmation)
+        {
+            return IdentityErrorCodes.InvalidEmailToken;
+        }
+
+        if (type == UserTokenType.PasswordReset)
+        {
+            return IdentityErrorCodes.InvalidPasswordResetToken;
+        }
+
+        if (type == UserTokenType.PhoneNumberVerification)
+        {
+            return IdentityErrorCodes.InvalidOrExpiredPhoneCode;
+        }
+
+        return IdentityErrorCodes.InvalidAccessToken;
+    }
+
+    private static ErrorCode GetExpiredTokenError(UserTokenType type)
+    {
+        if (type == UserTokenType.EmailConfirmation)
+        {
+            return IdentityErrorCodes.EmailTokenExpired;
+        }
+
+        if (type == UserTokenType.PasswordReset)
+        {
+            return IdentityErrorCodes.PasswordResetTokenExpired;
+        }
+
+        if (type == UserTokenType.PhoneNumberVerification)
+        {
+            return IdentityErrorCodes.InvalidOrExpiredPhoneCode;
+        }
+
+        return IdentityErrorCodes.InvalidAccessToken;
     }
 }

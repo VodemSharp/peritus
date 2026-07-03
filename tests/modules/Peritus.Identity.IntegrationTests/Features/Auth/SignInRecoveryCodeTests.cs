@@ -5,7 +5,7 @@ using Peritus.Identity.IntegrationTests.Assertions;
 using Peritus.IntegrationTests.Assertions;
 using Peritus.IntegrationTests.Fixtures;
 
-namespace Peritus.Identity.IntegrationTests.Scenarios.Auth;
+namespace Peritus.Identity.IntegrationTests.Features.Auth;
 
 public class SignInRecoveryCodeTests(InfrastructureFixture fixture) : IdentityApiTest(fixture)
 {

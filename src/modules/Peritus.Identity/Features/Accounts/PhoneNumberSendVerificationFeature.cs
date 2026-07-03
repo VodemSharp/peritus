@@ -47,7 +47,9 @@ public class PhoneNumberSendVerificationFeature(
 
         if (!PhoneNumber.IsValid(request.PhoneNumber))
         {
-            return FluentResult.ValidationProblem(nameof(request.PhoneNumber), "Invalid phone number format.");
+            return FluentResult.ValidationProblem(
+                nameof(request.PhoneNumber),
+                IdentityErrorCodes.InvalidPhoneNumber);
         }
 
         if (user.PhoneNumber == request.PhoneNumber && user.PhoneNumberConfirmed)

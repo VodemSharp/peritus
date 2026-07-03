@@ -8,16 +8,16 @@ humans) can move fast without breaking things.
 Peritus is a .NET 10 modular monolith template with Aspire orchestration. It is **not** a microservices architecture —
 it is a single deployable unit split into layers:
 
-| Layer           | Projects                                                                                                                                                  | Responsibility                                                                                               |
-|-----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
-| Host            | `Peritus.AppHost`, `Peritus.ServiceDefaults`                                                                                                              | Aspire orchestration, Docker Compose env, container registry config                                          |
-| Apps            | `Peritus.Api`                                                                                                                                             | Minimal API endpoints                                                                                        |
-| Modules         | `Peritus.Identity`, `Peritus.Notification`                                                                                                                | Domain modules. Identity = auth/users. Notification = email/SMS                                              |
-| Module Messages | `Peritus.Messages.Notification`                                                                                                                           | Inter-module command contracts                                                                               |
-| Migrators       | `Peritus.Migrator`                                                                                                                                        | DbUp migration runner + admin seeding                                                                        |
-| Contracts       | `Peritus.ApiContracts.Identity`, `Peritus.ApiClients`                                                                                                     | Refit interfaces + DTOs, client infrastructure + token storage                                               |
-| Common          | `Peritus.Types`, `Peritus.Primitives`, `Peritus.Persistence`, `Peritus.Guard`, `Peritus.Results`, `Peritus.OpenApi`, `Peritus.Messaging`, `Peritus.Cache` | Cross-cutting primitives, EF Core helpers, JWT guard, result types, in-process mediator, distributed caching |
-| Tests           | `Peritus.IntegrationTests`, `Peritus.Identity.IntegrationTests`, `Peritus.Api.IntegrationTests`                                                           | xUnit v3 integration tests                                                                                   |
+| Layer           | Projects                                                                                                                                                                        | Responsibility                                                                                                                                 |
+|-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| Host            | `Peritus.AppHost`, `Peritus.ServiceDefaults`                                                                                                                                    | Aspire orchestration, Docker Compose env, container registry config                                                                            |
+| Apps            | `Peritus.Api`                                                                                                                                                                   | Minimal API endpoints                                                                                                                          |
+| Modules         | `Peritus.Identity`, `Peritus.Notification`                                                                                                                                      | Domain modules. Identity = auth/users. Notification = email/SMS                                                                                |
+| Module Messages | `Peritus.Messages.Notification`                                                                                                                                                 | Inter-module command contracts                                                                                                                 |
+| Migrators       | `Peritus.Migrator`                                                                                                                                                              | DbUp migration runner + admin seeding                                                                                                          |
+| Contracts       | `Peritus.ApiContracts.Identity`, `Peritus.ApiClients`                                                                                                                           | Refit interfaces + DTOs, client infrastructure + token storage                                                                                 |
+| Common          | `Peritus.Types`, `Peritus.Primitives`, `Peritus.Persistence`, `Peritus.Guard`, `Peritus.Results`, `Peritus.AspNetCore`, `Peritus.OpenApi`, `Peritus.Messaging`, `Peritus.Cache` | Cross-cutting primitives, EF Core helpers, JWT guard, result types, ASP.NET Core result/HTTP helpers, in-process mediator, distributed caching |
+| Tests           | `Peritus.IntegrationTests`, `Peritus.Identity.IntegrationTests`, `Peritus.Api.IntegrationTests`                                                                                 | xUnit v3 integration tests                                                                                                                     |
 
 **Key infrastructure:** PostgreSQL (DbUp migrations), Valkey (Redis-compatible cache for token blacklist + lockout
 state), Aspire Testcontainers for integration tests.
@@ -62,16 +62,30 @@ These are the most common mistakes. See the detailed guides above for full expla
 
 ### FluentResult
 
-All feature methods return `FluentResult` instead of throwing:
+All feature methods return `FluentResult` instead of throwing. **Every failure carries an `ErrorCode`** — a
+`readonly record struct (string Code, string Message)` pairing a SCREAMING_SNAKE_CASE code with its canonical message —
+so the client localizes off the code. Pass the catalog entry; the message comes with it:
 
 ```csharp
 return FluentResult.Success();
 return FluentResult<Result>.Success(new Result { ... });
-return FluentResult.ValidationProblem(nameof(context.Email), "Error message.");
-return FluentResult.ValidationMessage("State error message.");
-return FluentResult.NotFound("Detail message.");
-return FluentResult.InternalError("Detail message.");
+return FluentResult.ValidationProblem(nameof(context.Password), IdentityErrorCodes.InvalidCredentials);
+return FluentResult.ValidationMessage(IdentityErrorCodes.TwoFactorNotEnabled);
+return FluentResult.NotFound(IdentityErrorCodes.SessionNotFound);
+return FluentResult.InternalError(ErrorCodes.Internal, exception);
+return FluentResult.ValidationProblem(nameof(context.Password),
+    IdentityErrorCodes.AccountLocked, remainingMinutes); // dynamic args → {0} template + wire `args`
 ```
+
+Codes live in `Peritus.FluentResults.ErrorCodes` (generic) and `IdentityErrorCodes` (domain), each a `static class` of
+`static readonly ErrorCode` fields. Field validation (400) returns top-level `code: "VALIDATION_ERROR"` plus an
+`errors:[{field, code, message}]` array; state/NotFound/Internal return a top-level `code` + `detail`. For a dynamic
+message, write the canonical text as a positional `{0}` template and pass `params object?[] args`; the server renders an
+English fallback and ships the values as a wire `args` array for the client to localize. `InternalError` is logged
+centrally
+at
+Error level — pass the `Exception` when you have one. See
+[patterns.md → Error Codes](docs/fundamental/patterns.md#error-codes).
 
 **Do NOT throw exceptions for business validation.** Use `FluentResult.ValidationProblem`. This applies to services too.
 
@@ -187,6 +201,9 @@ namespaces).
 - [ ] Did I avoid `.Value` on value objects in LINQ queries?
 - [ ] Did I pass the value object (not `.Value`) to `FindAsync`?
 - [ ] Did I use `nameof(context.Property)` for all `FluentResult.ValidationProblem` field names?
+- [ ] Did I pass an `ErrorCode` catalog entry (from `ErrorCodes` or `IdentityErrorCodes`, never an inline literal) to
+  every `ValidationProblem` / `ValidationMessage` / `NotFound` / `InternalError`? And pass the `Exception` to
+  `InternalError`? (For a dynamic message, use a `{0}` template + `params object?[] args`, not a baked-in string.)
 - [ ] Did I use `FluentResult` instead of throwing for business errors (in features AND services)?
 - [ ] Did I register new features as scoped in `IdentityExtensions`?
 - [ ] Did I add a static `MapEndpoint()` to the feature and call it in `IdentityExtensions.MapIdentityEndpoints()`?
@@ -201,6 +218,10 @@ namespaces).
   `Peritus.Identity.Options.IdentityOptions`?
 - [ ] Did I avoid inline magic strings? Extract them to `const` fields or `static readonly` members on the class that
   uses them.
+- [ ] Did I avoid `/// <summary>` XML doc comments and explanatory inline comments? Code is self-documenting here;
+  conventions live in these docs, not inline.
+- [ ] Did I avoid tuples (`(string, int)`, `ValueTuple`) in signatures and returns? Declare a named type
+  (`record` / `readonly record struct`) instead so members have meaningful names.
 - [ ] Did I avoid calling another module's feature directly? Use `IMediator` and a command from that module's
   `.Messages` project instead.
 - [ ] Did I guard on `IsSuccessfulWithContent` (not `IsSuccessful`) when I need `Content` non-null, and
@@ -265,5 +286,5 @@ a deliberate post-approval step.
 | TOTP test helper             | `tests/modules/Peritus.Identity.IntegrationTests/Helpers/TotpTestHelper.cs`                      |
 | Test result types            | `tests/modules/Peritus.Identity.IntegrationTests/Types/` (`AuthenticatedUser`, `TwoFactorSetup`) |
 | Fake Google validator        | `tests/modules/Peritus.Identity.IntegrationTests/Infrastructure/FakeGoogleTokenValidator.cs`     |
-| Identity test scenarios      | `tests/modules/Peritus.Identity.IntegrationTests/Scenarios/`                                     |
+| Identity test features       | `tests/modules/Peritus.Identity.IntegrationTests/Features/`                                      |
 | API health tests             | `tests/api/Peritus.Api.IntegrationTests/`                                                        |

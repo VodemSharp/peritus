@@ -10,7 +10,7 @@ using Peritus.IntegrationTests.Assertions;
 using Peritus.IntegrationTests.Fixtures;
 using Peritus.Types.Identity.Users;
 
-namespace Peritus.Identity.IntegrationTests.Scenarios.Auth;
+namespace Peritus.Identity.IntegrationTests.Features.Auth;
 
 public class SignInGoogleTests(InfrastructureFixture fixture) : IdentityApiTest(fixture)
 {

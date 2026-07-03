@@ -8,7 +8,7 @@ using Peritus.IntegrationTests.Attributes;
 using Peritus.IntegrationTests.Fixtures;
 using Peritus.Types.Identity.Users;
 
-namespace Peritus.Identity.IntegrationTests.Scenarios.Auth;
+namespace Peritus.Identity.IntegrationTests.Features.Auth;
 
 [Settings("IdentityOptions:MaxFailedAccessAttempts", "3")]
 [Settings("IdentityOptions:DefaultLockoutTimeSpan", "00:05:00")]

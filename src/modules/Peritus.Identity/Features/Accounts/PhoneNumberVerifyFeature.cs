@@ -42,14 +42,18 @@ public class PhoneNumberVerifyFeature(
 
         if (!result.IsSuccess)
         {
-            return FluentResult.ValidationProblem(nameof(request.Code), "Invalid or expired code.");
+            return FluentResult.ValidationProblem(
+                nameof(request.Code),
+                IdentityErrorCodes.InvalidOrExpiredPhoneCode);
         }
 
         var token = result.Result;
 
         if (string.IsNullOrEmpty(token.Value))
         {
-            return FluentResult.InternalError("Phone number verification token has no value.");
+            return FluentResult.InternalError(
+                ErrorCodes.Internal,
+                new InvalidOperationException("Phone number verification token has no value."));
         }
 
         user.PhoneNumber = new PhoneNumber(token.Value!);

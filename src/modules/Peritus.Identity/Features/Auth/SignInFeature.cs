@@ -11,6 +11,7 @@ using Peritus.FluentResults;
 using Peritus.Identity.Persistence;
 using Peritus.Identity.Persistence.Entities.Users;
 using Peritus.Identity.Services.Abstractions;
+using Peritus.Identity.Types;
 using Peritus.Persistence.Extensions;
 using Peritus.Types.Identity.Users;
 using Peritus.Types.Tokens;
@@ -56,15 +57,20 @@ public partial class SignInFeature(
 
         if (user is null)
         {
-            return FluentResult<Response>.ValidationProblem(nameof(request.Password), "Invalid credentials.");
+            return FluentResult<Response>.ValidationProblem(
+                nameof(request.Password),
+                IdentityErrorCodes.InvalidCredentials);
         }
 
         var remainingLockout = await GetRemainingLockoutAsync(user, ct);
         if (remainingLockout.HasValue)
         {
-            return FluentResult<Response>.ValidationProblem(nameof(request.Password),
-                $"Account locked due to multiple failed attempts. " +
-                $"Try again in {remainingLockout.Value.TotalMinutes:F0} minutes.");
+            var remainingMinutes = (int)Math.Round(remainingLockout.Value.TotalMinutes, MidpointRounding.AwayFromZero);
+
+            return FluentResult<Response>.ValidationProblem(
+                nameof(request.Password),
+                IdentityErrorCodes.AccountLocked,
+                remainingMinutes);
         }
 
         var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
@@ -79,7 +85,9 @@ public partial class SignInFeature(
         {
             case PasswordVerificationResult.Failed:
                 await RecordAccessFailedAsync(user, ct);
-                return FluentResult<Response>.ValidationProblem(nameof(request.Password), "Invalid credentials.");
+                return FluentResult<Response>.ValidationProblem(
+                    nameof(request.Password),
+                    IdentityErrorCodes.InvalidCredentials);
 
             case PasswordVerificationResult.SuccessRehashNeeded:
             case PasswordVerificationResult.Success:
@@ -87,8 +95,9 @@ public partial class SignInFeature(
 
                 if (_options.RequireConfirmedEmail && !user.EmailConfirmed)
                 {
-                    return FluentResult<Response>.ValidationProblem(nameof(request.Email),
-                        "Email not confirmed. Please check your inbox.");
+                    return FluentResult<Response>.ValidationProblem(
+                        nameof(request.Email),
+                        IdentityErrorCodes.EmailNotConfirmed);
                 }
 
                 if (!user.TwoFactorEnabled)
@@ -116,7 +125,7 @@ public partial class SignInFeature(
                 });
 
             default:
-                return FluentResult<Response>.InternalError("Unexpected sign-in result.");
+                return FluentResult<Response>.InternalError(ErrorCodes.Internal);
         }
     }
 

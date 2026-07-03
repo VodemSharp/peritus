@@ -11,6 +11,7 @@ using Peritus.Identity.Helpers;
 using Peritus.Identity.Persistence;
 using Peritus.Identity.Persistence.Entities.Users;
 using Peritus.Identity.Services.Abstractions;
+using Peritus.Identity.Types;
 using Peritus.Persistence.Extensions;
 using Peritus.Types.Identity.Users;
 
@@ -44,12 +45,14 @@ public class TwoFactorVerifySetupFeature(
 
         if (string.IsNullOrEmpty(user.TwoFactorSecret))
         {
-            return FluentResult<Response>.ValidationMessage("Two-factor authentication setup has not been initiated.");
+            return FluentResult<Response>.ValidationMessage(IdentityErrorCodes.TwoFactorNotInitiated);
         }
 
         if (!TotpHelper.ValidateCode(user.TwoFactorSecret, request.Code))
         {
-            return FluentResult<Response>.ValidationProblem(nameof(request.Code), "Invalid verification code.");
+            return FluentResult<Response>.ValidationProblem(
+                nameof(request.Code),
+                IdentityErrorCodes.InvalidTwoFactorSetupCode);
         }
 
         return await db.ExecuteInTransactionAsync(async () =>

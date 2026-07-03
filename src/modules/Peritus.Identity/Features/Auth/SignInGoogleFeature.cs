@@ -47,8 +47,9 @@ public class SignInGoogleFeature(
 
         if (payload is null || string.IsNullOrEmpty(payload.Email) || !payload.EmailVerified)
         {
-            return FluentResult<Response>.ValidationProblem(nameof(request.IdToken),
-                "Invalid or unverified Google token.");
+            return FluentResult<Response>.ValidationProblem(
+                nameof(request.IdToken),
+                IdentityErrorCodes.InvalidGoogleToken);
         }
 
         var externalLogin = await db.UserExternalLogins

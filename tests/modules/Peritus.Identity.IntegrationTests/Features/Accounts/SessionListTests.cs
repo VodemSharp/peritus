@@ -2,7 +2,7 @@ using Peritus.Identity.IntegrationTests.Abstractions;
 using Peritus.IntegrationTests.Assertions;
 using Peritus.IntegrationTests.Fixtures;
 
-namespace Peritus.Identity.IntegrationTests.Scenarios.Accounts;
+namespace Peritus.Identity.IntegrationTests.Features.Accounts;
 
 public class SessionListTests(InfrastructureFixture fixture) : IdentityApiTest(fixture)
 {

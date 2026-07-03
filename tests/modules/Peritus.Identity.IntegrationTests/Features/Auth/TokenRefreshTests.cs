@@ -6,7 +6,7 @@ using Peritus.IntegrationTests.Assertions;
 using Peritus.IntegrationTests.Fixtures;
 using Peritus.Types.Tokens;
 
-namespace Peritus.Identity.IntegrationTests.Scenarios.Auth;
+namespace Peritus.Identity.IntegrationTests.Features.Auth;
 
 public class TokenRefreshTests(InfrastructureFixture fixture) : IdentityApiTest(fixture)
 {

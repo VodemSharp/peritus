@@ -7,7 +7,7 @@ using Peritus.IntegrationTests.Assertions;
 using Peritus.IntegrationTests.Fixtures;
 using Peritus.Types.Identity.Users;
 
-namespace Peritus.Identity.IntegrationTests.Scenarios.Accounts;
+namespace Peritus.Identity.IntegrationTests.Features.Accounts;
 
 public class PasswordChangeTests(InfrastructureFixture fixture) : IdentityApiTest(fixture)
 {

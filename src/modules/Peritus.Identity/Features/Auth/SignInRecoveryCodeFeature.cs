@@ -8,6 +8,7 @@ using Peritus.FluentResults;
 using Peritus.Identity.Helpers;
 using Peritus.Identity.Persistence;
 using Peritus.Identity.Services.Abstractions;
+using Peritus.Identity.Types;
 using Peritus.Persistence.Extensions;
 using Peritus.Types.Identity.Users;
 using Peritus.Types.Tokens;
@@ -46,8 +47,9 @@ public class SignInRecoveryCodeFeature(
         var tokenResult = await tokenService.ValidateTwoFactorTokenAsync(request.TwoFactorToken, ct);
         if (!tokenResult.IsSuccess)
         {
-            return FluentResult<Response>.ValidationProblem(nameof(request.TwoFactorToken),
-                "Invalid two-factor token.");
+            return FluentResult<Response>.ValidationProblem(
+                nameof(request.TwoFactorToken),
+                IdentityErrorCodes.InvalidTwoFactorToken);
         }
 
         var userId = tokenResult.Result;
@@ -55,8 +57,9 @@ public class SignInRecoveryCodeFeature(
 
         if (!user.TwoFactorEnabled || string.IsNullOrEmpty(user.TwoFactorSecret))
         {
-            return FluentResult<Response>.ValidationProblem(nameof(request.Code),
-                "Two-factor authentication is not enabled.");
+            return FluentResult<Response>.ValidationProblem(
+                nameof(request.Code),
+                IdentityErrorCodes.TwoFactorNotEnabled);
         }
 
         var codeHash = TokenHasher.HashToken(request.Code);
@@ -67,7 +70,9 @@ public class SignInRecoveryCodeFeature(
 
         if (recoveryCode is null)
         {
-            return FluentResult<Response>.ValidationProblem(nameof(request.Code), "Invalid code.");
+            return FluentResult<Response>.ValidationProblem(
+                nameof(request.Code),
+                IdentityErrorCodes.InvalidRecoveryCode);
         }
 
         return await db.ExecuteInTransactionAsync(async () =>
