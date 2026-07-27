@@ -466,4 +466,5 @@ FodyWeavers.xsd
 
 ### Local agent skills ###
 .opencode/skills/
+.claude/
 
