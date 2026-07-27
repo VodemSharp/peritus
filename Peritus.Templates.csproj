@@ -4,7 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <PackageType>Template</PackageType>
     <PackageId>Peritus.Templates</PackageId>
-    <PackageVersion>1.0.3</PackageVersion>
+    <PackageVersion>1.0.4</PackageVersion>
     <Title>Peritus modular Aspire solution template</Title>
     <Authors>Vadym Fedorovych</Authors>
     <Description>dotnet new template that scaffolds the Peritus modular Aspire solution.</Description>

@@ -8,10 +8,10 @@ You are running the **manual** documentation sync for Peritus. This is **never**
 invokes it deliberately, *after* a change has been approved. Be idempotent: on a clean tree with no
 drift, change nothing and report "no drift".
 
-The docs split into two tiers (see CLAUDE.md → "Documentation System"):
+The docs split into two tiers (see AGENTS.md → "Documentation System"):
 
 - **Living** (`docs/reference/**`) — mechanically derived from code. You **regenerate** these.
-- **Fundamental** (`CLAUDE.md`, `docs/fundamental/*.md`) — hand-curated principles. You **audit and report** drift;
+- **Fundamental** (`AGENTS.md`, `docs/fundamental/*.md`) — hand-curated principles. You **audit and report** drift;
   you do **not** silently rewrite a principle. Only fix unambiguous factual breakage (a dead path, a
   renamed type, a broken markdown link) and call out anything judgmental for the human.
 
@@ -43,22 +43,22 @@ Focus area (optional): `$ARGUMENTS`. If empty, do the full sync below.
      entirely** — a "drift note: none" just restates the table. Surface real drift for a human; do not
      "fix" it in code.
 
-3. **Audit the fundamental docs for drift** (`CLAUDE.md` and `docs/fundamental/{architecture,patterns,persistence,api,refit,testing}.md`). For each, verify against the code:
+3. **Audit the fundamental docs for drift** (`AGENTS.md` and `docs/fundamental/{architecture,patterns,persistence,api,refit,testing}.md`). For each, verify against the code:
    - Every file path, type name, and method name mentioned still exists (Grep/Glob to confirm).
-   - Every markdown link resolves (back-link `[← Back to CLAUDE.md]`, the `**Related:**` line, and
+   - Every markdown link resolves (back-link `[← Back to AGENTS.md]`, the `**Related:**` line, and
      cross-doc links point at real files).
-   - The "File Locations Reference" rows in CLAUDE.md point at paths that exist.
+   - The "File Locations Reference" rows in AGENTS.md point at paths that exist.
    - **Fix only unambiguous breakage** (dead path, renamed symbol, broken link). For anything that
      changes the *meaning* of a convention, **report it** and let the human decide.
 
-4. **Refresh CLAUDE.md's hub wiring** only if docs were added or removed: update the Detailed Guides
+4. **Refresh AGENTS.md's hub wiring** only if docs were added or removed: update the Detailed Guides
    table and any cross-links so the table still lists every `docs/fundamental/*.md` and the living reference. Do not
    restructure prose.
 
 5. **Verify before finishing:**
    - `docs/reference/endpoints.md` row count equals the number of methods on `IIdentityApi`.
    - Every feature/test/contract path you wrote exists on disk.
-   - `grep -rn "Endpoints/" CLAUDE.md docs/` surfaces no reference to the removed
+   - `grep -rn "Endpoints/" AGENTS.md docs/` surfaces no reference to the removed
      `src/apps/Peritus.Api/Endpoints/` path.
 
 ## Report

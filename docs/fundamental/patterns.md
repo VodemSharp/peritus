@@ -1,14 +1,14 @@
 # Peritus — Patterns & Value Objects
 
-[← Back to CLAUDE.md](../../CLAUDE.md)
+[← Back to AGENTS.md](../../AGENTS.md)
 
 **Related:
 ** [Architecture](architecture.md) · [API Layer](api.md) · [Persistence](persistence.md) · [Testing](testing.md)
 
 ## The Feature Pattern
 
-Every business operation is a **Feature class** living in the module. The class holds three things: the
-logic (`ExecuteAsync`), a static `MapEndpoint` that declares its route (see [api.md](api.md)), and nested
+Every business operation is a **Feature class** living in the module. The class holds three things: the logic
+(`ExecuteAsync`), a static `MapEndpoint` that declares its route (see [api.md](api.md)), and nested
 `Request`/`Response` types:
 
 ```csharp
@@ -44,8 +44,8 @@ public class SignInFeature(
 
 - Feature classes are registered as **scoped** in DI (`builder.Services.AddScoped<SignInFeature>()`)
 - They return `FluentResult` or `FluentResult<Response>` — never throw for business errors
-- **The feature owns its endpoint** via static `MapEndpoint`; the handler binds the nested `Request` and
-  calls `feature.ExecuteAsync(...)`. There is no separate endpoints folder — see
+- **The feature owns its endpoint** via static `MapEndpoint`; the handler binds the nested `Request` and calls
+  `feature.ExecuteAsync(...)`. There is no separate endpoints folder — see
   [api.md](api.md) and [architecture.md](architecture.md).
 - Features live in `src/modules/{Module}/Features/{Domain}/` (e.g., `Features/Auth/`, `Features/Accounts/`,
   `Features/Profile/`)
@@ -136,8 +136,8 @@ State message / NotFound / Internal — top-level `code` + `detail`, no `errors[
 { "status": 404, "code": "SESSION_NOT_FOUND", "detail": "Session not found." }
 ```
 
-A dynamic message carries an `args` array (top-level for state/NotFound, or inside the `errors[]` entry for a
-field error) — the rendered `detail`/`message` is an English fallback; the client re-renders from `code` + `args`:
+A dynamic message carries an `args` array (top-level for state/NotFound, or inside the `errors[]` entry for a field
+error) — the rendered `detail`/`message` is an English fallback; the client re-renders from `code` + `args`:
 
 ```json
 {

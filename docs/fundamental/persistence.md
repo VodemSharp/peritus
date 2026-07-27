@@ -1,6 +1,6 @@
 # Peritus — Persistence Guide
 
-[← Back to CLAUDE.md](../../CLAUDE.md)
+[← Back to AGENTS.md](../../AGENTS.md)
 
 **Related:** [Patterns](patterns.md) · [API Layer](api.md) · [Architecture](architecture.md)
 
@@ -34,8 +34,8 @@ db.UserSessions.Update(session);
 await db.SaveChangesAsync();
 ```
 
-**Rule of thumb:** if you **query then modify**, call `.Update(entity)` before `SaveChangesAsync`. If
-you only `.AddAsync(...)` a new entity, no `.Update()` is needed. (`ExecuteUpdateAsync` /
+**Rule of thumb:** if you **query then modify**, call `.Update(entity)` before `SaveChangesAsync`. If you only
+`.AddAsync(...)` a new entity, no `.Update()` is needed. (`ExecuteUpdateAsync` /
 `ExecuteDeleteAsync` also bypass tracking and need no `.Update()`.)
 
 This pattern appears in any feature that mutates an existing row — representative examples:

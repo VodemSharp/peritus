@@ -1,6 +1,6 @@
 # Peritus — API Layer Guide
 
-[← Back to CLAUDE.md](../../CLAUDE.md)
+[← Back to AGENTS.md](../../AGENTS.md)
 
 **Related:
 ** [Architecture](architecture.md) · [Patterns](patterns.md) · [Refit Client](refit.md) · [Testing](testing.md) · [Endpoint Inventory](../reference/endpoints.md)
@@ -8,8 +8,8 @@
 ## Endpoint Pattern
 
 **There is no central endpoints folder.** Each feature owns its route: a `public static void
-MapEndpoint(IEndpointRouteBuilder)` method declared on the feature class itself, co-located with the
-logic it maps to (see [the vertical slice](architecture.md)).
+MapEndpoint(IEndpointRouteBuilder)` method declared on the feature class itself, co-located with the logic it maps to
+(see [the vertical slice](architecture.md)).
 
 ```csharp
 // src/modules/Peritus.Identity/Features/Auth/SignUpFeature.cs

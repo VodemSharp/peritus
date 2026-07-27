@@ -1,13 +1,13 @@
 # Peritus — Testing Guide
 
-[← Back to CLAUDE.md](../../CLAUDE.md)
+[← Back to AGENTS.md](../../AGENTS.md)
 
 **Related:** [Architecture](architecture.md) · [Refit Client](refit.md) · [API Layer](api.md) · [Patterns](patterns.md)
 
 One feature ↔ one test file, named `{Feature}Tests.cs` under `Features/{Domain}/`
-(see [the vertical slice](architecture.md)). Tests drive the slice through the `IIdentityApi` Refit
-client, exactly as a real consumer would. A feature whose behaviour differs by a template configuration
-flag does **not** split into a second file — it pins the flag declaratively with `[Settings(key, value)]`
+(see [the vertical slice](architecture.md)). Tests drive the slice through the `IIdentityApi` Refit client, exactly as a
+real consumer would. A feature whose behaviour differs by a template configuration flag does **not** split into a second
+file — it pins the flag declaratively with `[Settings(key, value)]`
 on the class or the individual `[Fact]` (see [Configuration via `[Settings]`](#configuration-via-settings)).
 
 ## Test Architecture
@@ -70,14 +70,14 @@ public class MyTests(InfrastructureFixture fixture)
 ```
 
 The `InfrastructureFixture` is shared across the whole assembly via
-`[assembly: AssemblyFixture(typeof(InfrastructureFixture))]` (in `AssemblyFixtures.cs`); the class
-receives it by constructor — no `IClassFixture`.
+`[assembly: AssemblyFixture(typeof(InfrastructureFixture))]` (in `AssemblyFixtures.cs`); the class receives it by
+constructor — no `IClassFixture`.
 
 ### Configuration via `[Settings]`
 
 To run a test (or a whole test class) against a non-default template configuration, apply
-`[Settings(key, value)]` — the key/value is fed to the `PeritusApplicationFactory` via `UseSetting`.
-There is no `GetSettings()` override; attributes replace it.
+`[Settings(key, value)]` — the key/value is fed to the `PeritusApplicationFactory` via `UseSetting`. There is no
+`GetSettings()` override; attributes replace it.
 
 - **Class level** — every test in the class gets the setting:
   ```csharp
@@ -85,33 +85,32 @@ There is no `GetSettings()` override; attributes replace it.
   [Settings("IdentityOptions:DefaultLockoutTimeSpan", "00:05:00")]
   public class SignInTests(InfrastructureFixture fixture) : IdentityApiTest(fixture) { ... }
   ```
-- **Method level** — only that `[Fact]` gets the setting (use this to keep a configuration variant in the
-  same file as the feature's other tests):
+- **Method level** — only that `[Fact]` gets the setting (use this to keep a configuration variant in the same file as
+  the feature's other tests):
   ```csharp
   [Fact]
   [Settings("IdentityOptions:RequireConfirmedEmail", "true")]
   public async Task SignUp_WhenEmailConfirmationRequired_ReturnsNoTokensAsync() { ... }
   ```
 
-Merge order is framework defaults → class attributes → method attributes; the most specific wins. Keys are
-plain strings (config paths), so a typo silently no-ops — copy the exact `IdentityOptions:*` path.
+Merge order is framework defaults → class attributes → method attributes; the most specific wins. Keys are plain strings
+(config paths), so a typo silently no-ops — copy the exact `IdentityOptions:*` path.
 
 ### Test Helpers
 
 Reuse the shared flow helpers (`IdentityApiTest`) instead of re-deriving setup in each test:
 
-- `UserCredentials.Create()` generates a unique email/password pair using `Guid.CreateVersion7()`. Always
-  use this instead of hardcoded values (the PostgreSQL container is persistent — see gotcha #1).
+- `UserCredentials.Create()` generates a unique email/password pair using `Guid.CreateVersion7()`. Always use this
+  instead of hardcoded values (the PostgreSQL container is persistent — see gotcha #1).
 - `CreateAuthenticatedUserAsync(ct)` → `AuthenticatedUser(Credentials, Tokens, Api)` (a `readonly record
   struct` in the test `Types/` folder). Deconstruct and discard what you don't need:
   `var (_, _, api) = await CreateAuthenticatedUserAsync(_ct);`
-- `SetupTwoFactorAsync(api, ct)` (`static`) → `TwoFactorSetup(Secret, RecoveryCodes)` — enables 2FA and
-  confirms it with a generated TOTP. Don't use it in tests that exercise the enable/confirm steps
-  themselves.
-- `TotpTestHelper.Generate(secret)` (`Helpers/`) — TOTP code for a shared secret. Use it instead of
-  hand-rolling `new Totp(Base32Encoding.ToBytes(...))` per file.
-- `FakeGoogleTokenValidator` (`Infrastructure/`) — inject via `ConfigureServices` to bypass Google's
-  network call; set its `Payload` to a `GoogleSignInPayload` (or `null` to simulate an invalid token).
+- `SetupTwoFactorAsync(api, ct)` (`static`) → `TwoFactorSetup(Secret, RecoveryCodes)` — enables 2FA and confirms it with
+  a generated TOTP. Don't use it in tests that exercise the enable/confirm steps themselves.
+- `TotpTestHelper.Generate(secret)` (`Helpers/`) — TOTP code for a shared secret. Use it instead of hand-rolling
+  `new Totp(Base32Encoding.ToBytes(...))` per file.
+- `FakeGoogleTokenValidator` (`Infrastructure/`) — inject via `ConfigureServices` to bypass Google's network call; set
+  its `Payload` to a `GoogleSignInPayload` (or `null` to simulate an invalid token).
 - Assign the Refit client to a variable before calling it (`var api = CreateIdentityApi(...); await
   api.X(...)`), never `await CreateIdentityApi().X(...)`.
 - Multi-session tests (session list/revoke) deliberately set up sessions manually — leave them as-is.
@@ -120,12 +119,12 @@ Reuse the shared flow helpers (`IdentityApiTest`) instead of re-deriving setup i
 
 ### Assertions
 
-`ApiAssert` (`tests/common/Peritus.IntegrationTests/Assertions/ApiAssert.cs`) handles the Refit 12
-null-narrowing for you (see [refit.md](refit.md)):
+`ApiAssert` (`tests/common/Peritus.IntegrationTests/Assertions/ApiAssert.cs`) handles the Refit 12 null-narrowing for
+you (see [refit.md](refit.md)):
 
 - `ApiAssert.Success(response)` — asserts success and **returns the non-null `Content`** (synchronous).
-- `ApiAssert.ValidationErrorAsync(response, nameof(Req.Field), "msg")` — for `FluentResult.ValidationProblem`;
-  locates the entry in the `errors[]` array by `field` and asserts its `message`.
+- `ApiAssert.ValidationErrorAsync(response, nameof(Req.Field), "msg")` — for `FluentResult.ValidationProblem`; locates
+  the entry in the `errors[]` array by `field` and asserts its `message`.
 - `ApiAssert.ValidationErrorAsync(response, nameof(Req.Field), expectedCode, "msg")` — same, but also asserts the
   per-field `code`.
 - `ApiAssert.ValidationErrorAsync(response, nameof(Req.Field), errorCode)` — preferred: pass the `ErrorCode` catalog

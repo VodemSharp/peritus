@@ -1,21 +1,21 @@
 # Peritus — Refit Client & `ApiResponse` Guide
 
-[← Back to CLAUDE.md](../../CLAUDE.md)
+[← Back to AGENTS.md](../../AGENTS.md)
 
 **Related:** [API Layer](api.md) · [Testing](testing.md) · [Patterns](patterns.md)
 
 The typed HTTP client is the Refit interface `IIdentityApi`
-(`src/contracts/Peritus.ApiContracts.Identity/IIdentityApi.cs`). Integration tests call the API
-exclusively through it (`CreateIdentityApi(...)`), so the null-narrowing rules below apply to every
-test assertion as well as to any production consumer of `IApiClients`.
+(`src/contracts/Peritus.ApiContracts.Identity/IIdentityApi.cs`). Integration tests call the API exclusively through it
+(`CreateIdentityApi(...)`), so the null-narrowing rules below apply to every test assertion as well as to any production
+consumer of `IApiClients`.
 
 ## `ApiResponse` Null Checks (Refit 12+)
 
 **Refit 12 removed the shadowed members on `IApiResponse<T>`** (`IsSuccessful`, `Error`,
 `ContentHeaders`, `IsSuccessStatusCode`). Consequences:
 
-- **`IsSuccessful` no longer narrows `Content` to non-null.** To get a non-null `Content`, guard on
-  **`IsSuccessfulWithContent`** instead (`HasContent` is the standalone check):
+- **`IsSuccessful` no longer narrows `Content` to non-null.** To get a non-null `Content`, guard on **
+  `IsSuccessfulWithContent`** instead (`HasContent` is the standalone check):
 
 ```csharp
 // ❌ WRONG (Refit 12) — IsSuccessful no longer narrows Content
@@ -36,8 +36,7 @@ Assert.NotNull(ex);                                  // narrows ex for the next 
 Assert.Equal(HttpStatusCode.BadRequest, ex.StatusCode);
 ```
 
-- `response.Error?.Message` and `response.Content` still compile — they bind to the inherited base
-  members.
+- `response.Error?.Message` and `response.Content` still compile — they bind to the inherited base members.
 
 | `IsSuccessfulWithContent` | `Content` |
 |---------------------------|-----------|

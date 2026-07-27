@@ -464,3 +464,6 @@ FodyWeavers.xsd
 .DS_Store
 **/.DS_Store
 
+### Local agent skills ###
+.opencode/skills/
+

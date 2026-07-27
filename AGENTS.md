@@ -82,9 +82,7 @@ Codes live in `Peritus.FluentResults.ErrorCodes` (generic) and `IdentityErrorCod
 `errors:[{field, code, message}]` array; state/NotFound/Internal return a top-level `code` + `detail`. For a dynamic
 message, write the canonical text as a positional `{0}` template and pass `params object?[] args`; the server renders an
 English fallback and ships the values as a wire `args` array for the client to localize. `InternalError` is logged
-centrally
-at
-Error level — pass the `Exception` when you have one. See
+centrally at Error level — pass the `Exception` when you have one. See
 [patterns.md → Error Codes](docs/fundamental/patterns.md#error-codes).
 
 **Do NOT throw exceptions for business validation.** Use `FluentResult.ValidationProblem`. This applies to services too.
@@ -152,21 +150,21 @@ await db.SaveChangesAsync();
 - `SessionValidationMiddleware` returns `401` with `WWW-Authenticate` header for revoked sessions
 - **External sign-in (Google)** at `POST /auth/signin/google`: `IGoogleTokenValidator` (impl
   `GoogleTokenValidator`) validates the Google ID token against Google's JWKS. Audience is **always**
-  validated against `IdentityOptions.GoogleClientId` — **fail-closed**: if it is unconfigured (`required`,
-  see below), tokens are rejected, never silently accepted. The validator's catch excludes
-  `OperationCanceledException` so cancellation propagates instead of looking like an invalid token. Tests
-  inject a `FakeGoogleTokenValidator` (return a `GoogleSignInPayload` or `null`) to skip the network.
+  validated against `IdentityOptions.GoogleClientId` — **fail-closed**: if it is unconfigured (`required`, see below),
+  tokens are rejected, never silently accepted. The validator's catch excludes
+  `OperationCanceledException` so cancellation propagates instead of looking like an invalid token. Tests inject a
+  `FakeGoogleTokenValidator` (return a `GoogleSignInPayload` or `null`) to skip the network.
 - `ClaimsPrincipal` extensions in `Peritus.Guard.Extensions.ClaimExtensions`:
     - `principal.GetUserId()` → `UserId`
     - `principal.GetAccessTokenId()` → `AccessTokenId`
 
 ## Module Options
 
-- **One options class per module.** `IdentityOptions` holds *all* Identity configuration; do not add
-  per-feature options classes (there is no separate `GoogleAuthOptions`). Bound from the `IdentityOptions`
+- **One options class per module.** `IdentityOptions` holds *all* Identity configuration; do not add per-feature options
+  classes (there is no separate `GoogleAuthOptions`). Bound from the `IdentityOptions`
   config section.
-- **Secrets that gate security are `required`.** `GoogleClientId` is `public required string` so a missing
-  value fails at startup binding rather than silently disabling audience validation. No code constructs
+- **Secrets that gate security are `required`.** `GoogleClientId` is `public required string` so a missing value fails
+  at startup binding rather than silently disabling audience validation. No code constructs
   `new IdentityOptions()`, so `required` breaks nothing.
 
 ## Folder Organization
@@ -189,11 +187,10 @@ service.
 | DI registration helpers                  | `Extensions/`            | `IdentityApiClientExtensions`      |
 | Interfaces                               | `Abstractions/`          | `ITokenStorage`                    |
 
-**One public type per file, named after the type.** Do not bundle related DTOs into a shared `*Contracts.cs`.
-In `Peritus.ApiContracts.Identity`, each request/response lives in its own file under a feature folder
-(`Auth/SignInRequest.cs`, `Auth/SignInResponse.cs`, `Accounts/PasswordChangeRequest.cs`, …) and carries
-**only the `using`s its own type needs** (e.g. token-only responses do not import user value-object
-namespaces).
+**One public type per file, named after the type.** Do not bundle related DTOs into a shared `*Contracts.cs`. In
+`Peritus.ApiContracts.Identity`, each request/response lives in its own file under a feature folder
+(`Auth/SignInRequest.cs`, `Auth/SignInResponse.cs`, `Accounts/PasswordChangeRequest.cs`, …) and carries **only the
+`using`s its own type needs** (e.g. token-only responses do not import user value-object namespaces).
 
 ## Common Pitfalls Checklist
 
@@ -220,8 +217,8 @@ namespaces).
   uses them.
 - [ ] Did I avoid `/// <summary>` XML doc comments and explanatory inline comments? Code is self-documenting here;
   conventions live in these docs, not inline.
-- [ ] Did I avoid tuples (`(string, int)`, `ValueTuple`) in signatures and returns? Declare a named type
-  (`record` / `readonly record struct`) instead so members have meaningful names.
+- [ ] Did I avoid tuples (`(string, int)`, `ValueTuple`) in signatures and returns? Declare a named type (`record` /
+  `readonly record struct`) instead so members have meaningful names.
 - [ ] Did I avoid calling another module's feature directly? Use `IMediator` and a command from that module's
   `.Messages` project instead.
 - [ ] Did I guard on `IsSuccessfulWithContent` (not `IsSuccessful`) when I need `Content` non-null, and
@@ -233,20 +230,19 @@ namespaces).
 The docs are a cross-linked "AI database" in two tiers:
 
 - **Fundamental** — hand-curated *principles and conventions*: this file plus the `docs/fundamental/*.md`
-  guides (architecture, patterns, persistence, api, refit, testing). Edit these by hand when a convention
-  actually changes. They describe *how we build*, not *what currently exists*.
+  guides (architecture, patterns, persistence, api, refit, testing). Edit these by hand when a convention actually
+  changes. They describe *how we build*, not *what currently exists*.
 - **Living** — a mechanically-derivable *inventory* under `docs/reference/` (currently
   [endpoints.md](docs/reference/endpoints.md)). **Generated, never hand-edited.** It carries an
   `AUTO-GENERATED` banner and is regenerated by the `/sync-docs` command.
 
-**Cross-link convention:** every `docs/fundamental/*.md` opens with `[← Back to CLAUDE.md](../../CLAUDE.md)`
+**Cross-link convention:** every `docs/fundamental/*.md` opens with `[← Back to AGENTS.md](../../AGENTS.md)`
 and a `**Related:** …` line; this file's [Detailed Guides](#detailed-guides) table links them all.
 
-**Keeping it current — `/sync-docs` (manual only):** after you add or change endpoints/features/tests
-**and the change is approved**, run `/sync-docs`. It regenerates the living inventory and audits the
-fundamental docs for path/name drift, reporting discrepancies for a human to resolve (it never silently
-rewrites principles). It is **never** run automatically — decisions churn before approval, so syncing is
-a deliberate post-approval step.
+**Keeping it current — `/sync-docs` (manual only):** after you add or change endpoints/features/tests **and the change
+is approved**, run `/sync-docs`. It regenerates the living inventory and audits the fundamental docs for path/name
+drift, reporting discrepancies for a human to resolve (it never silently rewrites principles). It is **never** run
+automatically — decisions churn before approval, so syncing is a deliberate post-approval step.
 
 ## File Locations Reference
 
@@ -284,7 +280,7 @@ a deliberate post-approval step.
 | Test base classes            | `tests/common/Peritus.IntegrationTests/Abstractions/ApiTest.cs`                                  |
 | Identity test base/helpers   | `tests/modules/Peritus.Identity.IntegrationTests/Abstractions/IdentityApiTest.cs`                |
 | TOTP test helper             | `tests/modules/Peritus.Identity.IntegrationTests/Helpers/TotpTestHelper.cs`                      |
-| Test result types            | `tests/modules/Peritus.Identity.IntegrationTests/Types/` (`AuthenticatedUser`, `TwoFactorSetup`) |
 | Fake Google validator        | `tests/modules/Peritus.Identity.IntegrationTests/Infrastructure/FakeGoogleTokenValidator.cs`     |
+| Test result types            | `tests/modules/Peritus.Identity.IntegrationTests/Types/` (`AuthenticatedUser`, `TwoFactorSetup`) |
 | Identity test features       | `tests/modules/Peritus.Identity.IntegrationTests/Features/`                                      |
 | API health tests             | `tests/api/Peritus.Api.IntegrationTests/`                                                        |
