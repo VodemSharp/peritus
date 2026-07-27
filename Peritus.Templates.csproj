@@ -4,7 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <PackageType>Template</PackageType>
     <PackageId>Peritus.Templates</PackageId>
-    <PackageVersion>1.0.4</PackageVersion>
+    <PackageVersion>1.0.5</PackageVersion>
     <Title>Peritus modular Aspire solution template</Title>
     <Authors>Vadym Fedorovych</Authors>
     <Description>dotnet new template that scaffolds the Peritus modular Aspire solution.</Description>
@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <None Include="**/*"
-          Exclude="bin/**;obj/**;**/bin/**;**/obj/**;.git/**;.idea/**;.vs/**;**/.DS_Store;**/*.user;**/*.userprefs;**/*.suo;**/*.csproj.user;Peritus.Templates.csproj;Peritus.Templates.csproj.user;Peritus.Templates.csproj.*;nupkg/**"
+          Exclude="bin/**;obj/**;**/bin/**;**/obj/**;.git/**;.idea/**;.vs/**;**/.DS_Store;**/*.user;**/*.userprefs;**/*.suo;**/*.csproj.user;Peritus.Templates.csproj;Peritus.Templates.csproj.user;Peritus.Templates.csproj.*;nupkg/**;.opencode/**;artifacts/**"
           Pack="true"
           PackagePath="content/"/>
   </ItemGroup>
