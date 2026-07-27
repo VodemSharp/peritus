@@ -3,6 +3,9 @@ name: Verify
 on:
   pull_request:
     branches: [dev, main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/**'
   workflow_dispatch:
 
 concurrency:
@@ -24,6 +27,14 @@ jobs:
         uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
         with:
           dotnet-version: '10.0.x'
+        env:
+          DOTNET_INSTALL_DIR: ${{ github.workspace }}/.dotnet
+
+      - name: Add .NET to PATH
+        run: echo "${{ github.workspace }}/.dotnet" >> $GITHUB_PATH
+
+      - name: Set lowercase registry repository
+        run: echo "REGISTRY_REPOSITORY=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Cache NuGet packages
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
@@ -40,11 +51,11 @@ jobs:
 
       - name: Restore and Build
         run: |
-          dotnet restore
-          dotnet build --no-restore --configuration Release
+          dotnet restore backend/Epsy.slnx
+          dotnet build backend/Epsy.slnx --no-restore --configuration Release
 
       - name: Test
-        run: dotnet test --no-build --configuration Release
+        run: dotnet test backend/Epsy.slnx --no-build --configuration Release
 
       # Smoke test: verify the AppHost can generate Docker Compose artifacts.
       # The output is uploaded as a PR artifact so reviewers can inspect it.
@@ -52,11 +63,12 @@ jobs:
         env:
           APP_VERSION: ${{ github.event.pull_request.number && format('pr-{0}-{1}', github.event.pull_request.number, github.run_id) || format('manual-{0}', github.run_id) }}
           OUTPUT_DIR: artifacts/compose-verify
-          APPHOST_PROJECT_PATH: src/host/Peritus.AppHost/Peritus.AppHost.csproj
-        run: bash .github/scripts/publish-docker-compose.sh
+          APPHOST_PROJECT_PATH: backend/src/Epsy.AppHost/Epsy.AppHost.csproj
+        run: dotnet run .github/scripts/publish-docker-compose.cs
 
       - name: Upload compose artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: compose-verify
           path: artifacts/compose-verify/
+          retention-days: 1
